@@ -192,28 +192,7 @@ function Home() {
     }
   }
 
-  function startVoice() {
-    const w = window as unknown as {
-      webkitSpeechRecognition?: new () => MinimalSpeechRecognition;
-      SpeechRecognition?: new () => MinimalSpeechRecognition;
-    };
-    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
-    if (!SR) {
-      toast.error("Voice input not supported on this device");
-      return;
-    }
-    const rec = new SR();
-    rec.lang = "en-US";
-    rec.interimResults = false;
-    rec.onresult = (e) => {
-      const text = e.results[0][0].transcript;
-      setInput(text);
-      send(text);
-    };
-    rec.onerror = () => toast.error("Couldn't hear that");
-    rec.start();
-    toast("Listening…");
-  }
+  // voice handled by <VoiceButton />; transcript is sent immediately
 
   function reset() {
     setMessages([]);
