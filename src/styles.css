@@ -62,42 +62,44 @@
 }
 
 :root {
-  /* comstruct brand: petrol teal #2F6879 on light surface #F4F5F6 */
+  /* comstruct brand: petrol teal, tuned for outdoor / construction-site readability.
+   * Foreground pushed to near-black, muted-foreground darkened, borders darker,
+   * primary deeper for stronger contrast in glare. */
   --radius: 0.75rem;
-  --background: oklch(0.975 0.002 240);
-  --foreground: oklch(0.32 0.04 217);
+  --background: oklch(0.985 0.002 240);
+  --foreground: oklch(0.18 0.03 220);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.32 0.04 217);
+  --card-foreground: oklch(0.18 0.03 220);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.32 0.04 217);
-  --primary: oklch(0.46 0.05 217);
-  --primary-foreground: oklch(0.985 0.002 240);
-  --secondary: oklch(0.95 0.005 230);
-  --secondary-foreground: oklch(0.32 0.04 217);
-  --muted: oklch(0.955 0.004 240);
-  --muted-foreground: oklch(0.5 0.025 220);
-  --accent: oklch(0.93 0.02 215);
-  --accent-foreground: oklch(0.32 0.04 217);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.9 0.008 230);
-  --input: oklch(0.92 0.006 230);
-  --ring: oklch(0.46 0.05 217);
-  --chart-1: oklch(0.46 0.05 217);
-  --chart-2: oklch(0.65 0.15 155);
-  --chart-3: oklch(0.55 0.08 210);
-  --chart-4: oklch(0.75 0.12 85);
-  --chart-5: oklch(0.6 0.18 30);
+  --popover-foreground: oklch(0.18 0.03 220);
+  --primary: oklch(0.36 0.07 217);
+  --primary-foreground: oklch(0.99 0.002 240);
+  --secondary: oklch(0.93 0.008 230);
+  --secondary-foreground: oklch(0.18 0.03 220);
+  --muted: oklch(0.94 0.005 240);
+  --muted-foreground: oklch(0.35 0.03 220);
+  --accent: oklch(0.9 0.03 215);
+  --accent-foreground: oklch(0.18 0.03 220);
+  --destructive: oklch(0.5 0.25 27.325);
+  --destructive-foreground: oklch(0.99 0.003 247.858);
+  --border: oklch(0.78 0.015 230);
+  --input: oklch(0.82 0.012 230);
+  --ring: oklch(0.36 0.07 217);
+  --chart-1: oklch(0.36 0.07 217);
+  --chart-2: oklch(0.55 0.18 155);
+  --chart-3: oklch(0.45 0.1 210);
+  --chart-4: oklch(0.65 0.16 85);
+  --chart-5: oklch(0.55 0.22 30);
   --sidebar: oklch(0.98 0.002 240);
-  --sidebar-foreground: oklch(0.32 0.04 217);
-  --sidebar-primary: oklch(0.46 0.05 217);
-  --sidebar-primary-foreground: oklch(0.985 0.002 240);
-  --sidebar-accent: oklch(0.93 0.02 215);
-  --sidebar-accent-foreground: oklch(0.32 0.04 217);
-  --sidebar-border: oklch(0.9 0.008 230);
-  --sidebar-ring: oklch(0.46 0.05 217);
-  --brand: oklch(0.46 0.05 217);
-  --brand-foreground: oklch(0.985 0.002 240);
+  --sidebar-foreground: oklch(0.18 0.03 220);
+  --sidebar-primary: oklch(0.36 0.07 217);
+  --sidebar-primary-foreground: oklch(0.99 0.002 240);
+  --sidebar-accent: oklch(0.9 0.03 215);
+  --sidebar-accent-foreground: oklch(0.18 0.03 220);
+  --sidebar-border: oklch(0.78 0.015 230);
+  --sidebar-ring: oklch(0.36 0.07 217);
+  --brand: oklch(0.36 0.07 217);
+  --brand-foreground: oklch(0.99 0.002 240);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Chivo Mono", ui-monospace, SFMono-Regular, monospace;
 }
@@ -149,6 +151,15 @@
     border-color: var(--color-border);
   }
 
+  html {
+    /* Bump base font size for outdoor / glove use. Most Tailwind text-* sizes
+     * scale from this rem. Mobile gets the biggest bump. */
+    font-size: 18px;
+  }
+  @media (min-width: 1024px) {
+    html { font-size: 17px; }
+  }
+
   html, body {
     font-family: var(--font-sans);
   }
@@ -157,5 +168,15 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
+    font-weight: 500;
+  }
+
+  /* Glove-friendly minimum tap target: 48px on any interactive control. */
+  button, a, [role="button"], input, select, textarea {
+    min-height: 48px;
+  }
+  /* Don't enforce min-height on inline links inside prose / chat bubbles. */
+  p a, span a, li a, a.inline-link {
+    min-height: 0;
   }
 }
