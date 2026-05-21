@@ -367,11 +367,13 @@ function HeroView({
   input,
   setInput,
   send,
+  onSelectCategory,
   inputRef,
 }: {
   input: string;
   setInput: (v: string) => void;
   send: (v: string) => void;
+  onSelectCategory: (c: string) => void;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   return (
