@@ -79,7 +79,7 @@ function AdminProducts() {
       source_category: draft.source_category || null,
     };
     const { error } = editing
-      ? await supabase.from("products").update(payload).eq("id", editing.id)
+      ? await supabase.from("products").update(payload).eq("sku", editing.sku)
       : await supabase.from("products").insert(payload);
     if (error) {
       toast.error(error.message);
@@ -93,7 +93,7 @@ function AdminProducts() {
 
   async function remove(p: Product) {
     if (!confirm(`Delete ${p.sku} – ${p.name}?`)) return;
-    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    const { error } = await supabase.from("products").delete().eq("sku", p.sku);
     if (error) {
       toast.error(error.message);
       return;
@@ -138,7 +138,7 @@ function AdminProducts() {
                 </thead>
                 <tbody>
                   {filtered.map((p) => (
-                    <tr key={p.id} className="border-t hover:bg-accent/50">
+                    <tr key={p.sku} className="border-t hover:bg-accent/50">
                       <td className="px-3 py-2 font-mono text-xs">{p.sku}</td>
                       <td className="px-3 py-2">
                         <button onClick={() => startEdit(p)} className="text-left hover:underline">
