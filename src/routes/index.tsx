@@ -651,41 +651,50 @@ function ProductCard({
 
   return (
     <div
-      className={`rounded-xl border bg-card overflow-hidden flex flex-col transition-opacity duration-300 ${
+      className={`group relative rounded-md border bg-card p-4 flex gap-4 transition-opacity duration-300 hover:border-foreground/30 ${
         dimmed ? "opacity-20 pointer-events-none" : "opacity-100"
-      }`}
+      } ${recommended ? "border-brand border-2" : ""}`}
     >
-      <div className="relative p-3 pb-2">
-        <div className="absolute top-2 left-2 text-[10px] font-mono text-muted-foreground" title={product.supplier ?? undefined}>
-          {product.sku}
+      {recommended && (
+        <div className="absolute -top-2 left-3 bg-brand text-brand-foreground text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+          Pick
         </div>
-        {recommended && (
-          <div className="absolute top-2 right-2 bg-brand text-brand-foreground text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
-            Pick
-          </div>
-        )}
-        <div className="aspect-square bg-muted rounded-lg grid place-items-center text-3xl">
-          📦
-        </div>
+      )}
+
+      {/* Image */}
+      <div className="shrink-0 w-28 h-28 sm:w-32 sm:h-32 bg-muted/50 rounded grid place-items-center text-4xl">
+        📦
       </div>
-      <div className="px-3 pb-3 flex-1 flex flex-col">
-        <div className="font-semibold text-sm leading-tight line-clamp-2">{product.name}</div>
-        <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-          {product.supplier ?? "—"} · per {product.unit}
-        </div>
-        <div className="mt-auto pt-3">
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <h3 className="font-bold text-base leading-tight text-foreground line-clamp-2">
+          {product.name}
+        </h3>
+        {product.description && (
+          <p className="text-sm text-muted-foreground leading-snug mt-1 line-clamp-3">
+            {product.description}
+          </p>
+        )}
+        <div className="mt-auto pt-2 flex items-end justify-between gap-2">
+          <div className="text-xs text-muted-foreground min-w-0">
+            <div className="font-mono truncate">{product.sku}</div>
+            {product.supplier && <div className="truncate">{product.supplier}</div>}
+          </div>
           {inCart ? (
-            <div className="flex items-center justify-between rounded-lg border h-11 overflow-hidden">
+            <div className="flex items-center rounded-md border h-11 overflow-hidden shrink-0">
               <button
                 onClick={() => cart.setQty(product.sku, inCart.qty - 1)}
-                className="w-11 h-full grid place-items-center hover:bg-accent text-lg font-semibold"
+                className="w-11 h-full grid place-items-center hover:bg-accent text-xl font-semibold"
+                aria-label="Decrease"
               >
                 −
               </button>
-              <span className="text-sm font-semibold">{inCart.qty}</span>
+              <span className="px-3 text-base font-bold tabular-nums">{inCart.qty}</span>
               <button
                 onClick={() => cart.setQty(product.sku, inCart.qty + 1)}
-                className="w-11 h-full grid place-items-center hover:bg-accent text-lg font-semibold"
+                className="w-11 h-full grid place-items-center hover:bg-accent text-xl font-semibold"
+                aria-label="Increase"
               >
                 +
               </button>
@@ -693,10 +702,10 @@ function ProductCard({
           ) : (
             <button
               onClick={add}
-              className="w-full h-11 flex items-stretch rounded-lg overflow-hidden bg-foreground text-background font-semibold text-sm"
+              className="shrink-0 h-11 flex items-stretch rounded-md overflow-hidden bg-foreground text-background font-bold text-sm"
             >
-              <span className="flex-1 grid place-items-center">{formatEUR(product.price)}</span>
-              <span className="w-12 grid place-items-center bg-brand text-brand-foreground">
+              <span className="px-3 grid place-items-center tabular-nums">{formatEUR(product.price)}</span>
+              <span className="w-11 grid place-items-center bg-brand text-brand-foreground">
                 {justAdded ? <Check className="size-5" /> : <Plus className="size-5" />}
               </span>
             </button>
