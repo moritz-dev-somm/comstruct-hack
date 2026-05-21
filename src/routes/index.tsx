@@ -324,20 +324,9 @@ function Home() {
         </div>
       )}
 
-      {/* Approval banner */}
-      {cart.subtotal > 200 && (
-        <div className="fixed bottom-[88px] left-0 right-0 z-40 mx-auto max-w-3xl px-4">
-          <div className="rounded-lg bg-brand text-brand-foreground px-4 py-3 shadow-lg flex items-center justify-between text-sm font-medium">
-            <span>Subtotal CHF {cart.subtotal.toFixed(2)} — needs PM approval before dispatch.</span>
-            <button
-              className="ml-3 rounded-md bg-background/20 hover:bg-background/30 px-3 py-1.5 text-xs font-semibold"
-              onClick={() => toast.success("Sent for PM approval")}
-            >
-              Send for approval
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Approval banner — driven by budget/rules decision */}
+      <ApprovalBanner />
+
 
       {/* A-material modal */}
       {aMaterialFlag && (
