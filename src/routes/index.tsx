@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { CATALOG, BUNDLES, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { useCheckoutDecision, type CheckoutDecision } from "@/lib/budget";
 import { VoiceButton } from "@/components/VoiceButton";
 
 export const Route = createFileRoute("/")({
