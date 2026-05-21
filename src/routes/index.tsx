@@ -731,7 +731,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
 interface MinimalSpeechRecognition {
   lang: string;
   interimResults: boolean;
-  onresult: (e: SpeechRecognitionEvent) => void;
+  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
   onerror: (e: Event) => void;
   start: () => void;
 }
