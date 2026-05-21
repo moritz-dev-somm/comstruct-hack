@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type UseCase = { scenario: string; why: string };
+
 export type Product = {
   sku: string;
   name: string;
@@ -15,6 +17,9 @@ export type Product = {
   typicalSite: string | null;
   attributes: Record<string, unknown>;
   keywords: string[];
+  description: string | null;
+  useCases: UseCase[];
+  enrichedAt: string | null;
 };
 
 export const SITE_CATEGORIES = [
@@ -44,6 +49,9 @@ type Row = {
   typical_site: string | null;
   attributes: Record<string, unknown> | null;
   keywords: string[] | null;
+  description: string | null;
+  use_cases: UseCase[] | null;
+  enriched_at: string | null;
 };
 
 export function rowToProduct(r: Row): Product {
@@ -61,6 +69,9 @@ export function rowToProduct(r: Row): Product {
     typicalSite: r.typical_site,
     attributes: r.attributes ?? {},
     keywords: r.keywords ?? [],
+    description: r.description,
+    useCases: r.use_cases ?? [],
+    enrichedAt: r.enriched_at,
   };
 }
 
