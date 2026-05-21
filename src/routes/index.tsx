@@ -92,6 +92,7 @@ function Home() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const inConversation = messages.length > 0;
+  const showCatalog = inConversation || selectedCategory !== null;
 
   // restore localStorage thread
   useEffect(() => {
