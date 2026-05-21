@@ -10,6 +10,7 @@ import {
 import { Toaster } from "sonner";
 import { CartProvider } from "@/lib/cart";
 import { BudgetProvider } from "@/lib/budget";
+import { OrdersProvider } from "@/lib/orders";
 
 import appCss from "../styles.css?url";
 
