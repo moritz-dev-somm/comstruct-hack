@@ -155,8 +155,8 @@ export function VoiceButton({
 
     const rec = new SR();
     rec.lang =
-      lang ??
-      (typeof navigator !== "undefined" && navigator.language) ??
+      lang ||
+      (typeof navigator !== "undefined" && navigator.language) ||
       "en-US";
     rec.interimResults = true;
     rec.continuous = false; // single utterance — most reliable on mobile
