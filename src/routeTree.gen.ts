@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProcurementRouteImport } from './routes/procurement'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProcurementIndexRouteImport } from './routes/procurement.index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProcurementIndexRoute = ProcurementIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProcurementRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -50,27 +56,29 @@ const AdminProductsRoute = AdminProductsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/orders': typeof OrdersRoute
-  '/procurement': typeof ProcurementRoute
+  '/procurement': typeof ProcurementRouteWithChildren
   '/settings': typeof SettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/api/chat': typeof ApiChatRoute
+  '/procurement/': typeof ProcurementIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/orders': typeof OrdersRoute
-  '/procurement': typeof ProcurementRoute
   '/settings': typeof SettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/api/chat': typeof ApiChatRoute
+  '/procurement': typeof ProcurementIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/orders': typeof OrdersRoute
-  '/procurement': typeof ProcurementRoute
+  '/procurement': typeof ProcurementRouteWithChildren
   '/settings': typeof SettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/api/chat': typeof ApiChatRoute
+  '/procurement/': typeof ProcurementIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,14 +89,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/admin/products'
     | '/api/chat'
+    | '/procurement/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/orders'
-    | '/procurement'
     | '/settings'
     | '/admin/products'
     | '/api/chat'
+    | '/procurement'
   id:
     | '__root__'
     | '/'
@@ -97,12 +106,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/admin/products'
     | '/api/chat'
+    | '/procurement/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OrdersRoute: typeof OrdersRoute
-  ProcurementRoute: typeof ProcurementRoute
+  ProcurementRoute: typeof ProcurementRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   AdminProductsRoute: typeof AdminProductsRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -138,6 +148,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/procurement/': {
+      id: '/procurement/'
+      path: '/'
+      fullPath: '/procurement/'
+      preLoaderRoute: typeof ProcurementIndexRouteImport
+      parentRoute: typeof ProcurementRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -155,10 +172,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ProcurementRouteChildren {
+  ProcurementIndexRoute: typeof ProcurementIndexRoute
+}
+
+const ProcurementRouteChildren: ProcurementRouteChildren = {
+  ProcurementIndexRoute: ProcurementIndexRoute,
+}
+
+const ProcurementRouteWithChildren = ProcurementRoute._addFileChildren(
+  ProcurementRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OrdersRoute: OrdersRoute,
-  ProcurementRoute: ProcurementRoute,
+  ProcurementRoute: ProcurementRouteWithChildren,
   SettingsRoute: SettingsRoute,
   AdminProductsRoute: AdminProductsRoute,
   ApiChatRoute: ApiChatRoute,
