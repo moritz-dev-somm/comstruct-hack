@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowUp, Check, HardHat, Mic, Plus, ShoppingCart, X } from "lucide-react";
+import { ArrowUp, Check, HardHat, Plus, ShoppingCart, X } from "lucide-react";
 import { CATALOG, BUNDLES, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { VoiceButton } from "@/components/VoiceButton";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -191,28 +192,7 @@ function Home() {
     }
   }
 
-  function startVoice() {
-    const w = window as unknown as {
-      webkitSpeechRecognition?: new () => MinimalSpeechRecognition;
-      SpeechRecognition?: new () => MinimalSpeechRecognition;
-    };
-    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
-    if (!SR) {
-      toast.error("Voice input not supported on this device");
-      return;
-    }
-    const rec = new SR();
-    rec.lang = "en-US";
-    rec.interimResults = false;
-    rec.onresult = (e) => {
-      const text = e.results[0][0].transcript;
-      setInput(text);
-      send(text);
-    };
-    rec.onerror = () => toast.error("Couldn't hear that");
-    rec.start();
-    toast("Listening…");
-  }
+  // voice handled by <VoiceButton />; transcript is sent immediately
 
   function reset() {
     setMessages([]);
@@ -260,7 +240,6 @@ function Home() {
             input={input}
             setInput={setInput}
             send={send}
-            startVoice={startVoice}
             inputRef={inputRef}
           />
         ) : (
@@ -277,19 +256,21 @@ function Home() {
         )}
       </main>
 
-      {/* Sticky bottom input in conversation mode */}
+      {/* Sticky bottom bar in conversation mode: chat input + separate, distinct voice button */}
       {inConversation && (
         <div className="sticky bottom-0 z-30 border-t bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
-          <div className="mx-auto max-w-3xl px-4 py-3">
-            <ChatInput
-              value={input}
-              onChange={setInput}
-              onSend={() => send(input)}
-              onVoice={startVoice}
-              disabled={streaming}
-              inputRef={inputRef}
-              placeholder="Ask a follow-up…"
-            />
+          <div className="mx-auto max-w-3xl px-4 py-3 flex items-end gap-3">
+            <div className="flex-1">
+              <ChatInput
+                value={input}
+                onChange={setInput}
+                onSend={() => send(input)}
+                disabled={streaming}
+                inputRef={inputRef}
+                placeholder="Ask a follow-up…"
+              />
+            </div>
+            <VoiceButton size="compact" onTranscript={(t) => send(t)} />
           </div>
         </div>
       )}
@@ -348,13 +329,11 @@ function HeroView({
   input,
   setInput,
   send,
-  startVoice,
   inputRef,
 }: {
   input: string;
   setInput: (v: string) => void;
   send: (v: string) => void;
-  startVoice: () => void;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   return (
@@ -364,18 +343,28 @@ function HeroView({
           What do you need on site?
         </h1>
         <p className="mt-3 text-center text-muted-foreground">
-          Describe the job in your own words. The assistant finds the right screws, PPE and consumables.
+          Describe the job in your own words — speak it or type it.
         </p>
 
-        <div className="mt-8">
+        {/* Primary voice CTA — visually distinct, separated from the chat bar */}
+        <div className="mt-8 flex justify-center">
+          <VoiceButton size="hero" onTranscript={(t) => send(t)} />
+        </div>
+
+        <div className="my-6 flex items-center gap-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="flex-1 h-px bg-border" />
+          or type
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div>
           <ChatInput
             value={input}
             onChange={setInput}
             onSend={() => send(input)}
-            onVoice={startVoice}
             disabled={false}
             inputRef={inputRef}
-            placeholder="Type or tap the mic…"
+            placeholder="Describe the job…"
             big
           />
         </div>
@@ -393,6 +382,7 @@ function HeroView({
             ))}
           </div>
         </div>
+
 
         <div className="mt-10">
           <div className="flex items-center gap-3 text-xs text-muted-foreground uppercase tracking-wide">
@@ -536,7 +526,6 @@ function ChatInput({
   value,
   onChange,
   onSend,
-  onVoice,
   disabled,
   inputRef,
   placeholder,
@@ -545,7 +534,6 @@ function ChatInput({
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
-  onVoice: () => void;
   disabled: boolean;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   placeholder: string;
@@ -574,14 +562,6 @@ function ChatInput({
         }`}
         style={{ maxHeight: 160 }}
       />
-      <button
-        type="button"
-        onClick={onVoice}
-        className="shrink-0 size-11 grid place-items-center rounded-xl hover:bg-accent text-muted-foreground"
-        aria-label="Voice input"
-      >
-        <Mic className="size-5" />
-      </button>
       <button
         type="button"
         onClick={onSend}
@@ -727,12 +707,4 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
-// minimal SpeechRecognition types (avoid clashing with lib.dom)
-interface MinimalSpeechRecognition {
-  lang: string;
-  interimResults: boolean;
-  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
-  onerror: (e: Event) => void;
-  start: () => void;
-}
 export type {};
