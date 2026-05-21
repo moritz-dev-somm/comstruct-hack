@@ -329,13 +329,11 @@ function HeroView({
   input,
   setInput,
   send,
-  startVoice,
   inputRef,
 }: {
   input: string;
   setInput: (v: string) => void;
   send: (v: string) => void;
-  startVoice: () => void;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   return (
@@ -345,18 +343,28 @@ function HeroView({
           What do you need on site?
         </h1>
         <p className="mt-3 text-center text-muted-foreground">
-          Describe the job in your own words. The assistant finds the right screws, PPE and consumables.
+          Describe the job in your own words — speak it or type it.
         </p>
 
-        <div className="mt-8">
+        {/* Primary voice CTA — visually distinct, separated from the chat bar */}
+        <div className="mt-8 flex justify-center">
+          <VoiceButton size="hero" onTranscript={(t) => send(t)} />
+        </div>
+
+        <div className="my-6 flex items-center gap-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          <div className="flex-1 h-px bg-border" />
+          or type
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <div>
           <ChatInput
             value={input}
             onChange={setInput}
             onSend={() => send(input)}
-            onVoice={startVoice}
             disabled={false}
             inputRef={inputRef}
-            placeholder="Type or tap the mic…"
+            placeholder="Describe the job…"
             big
           />
         </div>
@@ -374,6 +382,7 @@ function HeroView({
             ))}
           </div>
         </div>
+
 
         <div className="mt-10">
           <div className="flex items-center gap-3 text-xs text-muted-foreground uppercase tracking-wide">
