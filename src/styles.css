@@ -140,8 +140,8 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
-  --brand: oklch(0.72 0.2 41);
-  --brand-foreground: oklch(0.15 0.02 264);
+  --brand: oklch(0.62 0.08 217);
+  --brand-foreground: oklch(0.15 0.02 220);
 }
 
 @layer base {
@@ -149,8 +149,13 @@
     border-color: var(--color-border);
   }
 
+  html, body {
+    font-family: var(--font-sans);
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
   }
 }
