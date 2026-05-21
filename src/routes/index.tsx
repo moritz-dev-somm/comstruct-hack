@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowUp, Check, HardHat, Mic, Plus, ShoppingCart, X } from "lucide-react";
+import { ArrowUp, Check, HardHat, Plus, ShoppingCart, X } from "lucide-react";
 import { CATALOG, BUNDLES, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { VoiceButton } from "@/components/VoiceButton";
 
 export const Route = createFileRoute("/")({
   component: Home,
