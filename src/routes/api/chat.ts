@@ -35,7 +35,7 @@ function sbClient() {
 
 function attrLine(attrs: Record<string, unknown> | null | undefined): string {
   if (!attrs) return "";
-  const entries = Object.entries(attrs).slice(0, 8);
+  const entries = Object.entries(attrs);
   if (!entries.length) return "";
   return entries.map(([k, v]) => `${k}=${v}`).join(", ");
 }
@@ -44,10 +44,12 @@ async function categorySummary(): Promise<string> {
   const sb = sbClient();
   const { data, error } = await sb
     .from("products")
-    .select("sku,name,category,unit,price_eur,supplier,description,attributes,use_cases")
+    .select(
+      "sku,name,category,source_category,unit,price_eur,supplier,hazardous,consumable,storage_location,typical_site,keywords,description,attributes,use_cases",
+    )
     .order("category")
     .order("sku")
-    .limit(2000);
+    .limit(5000);
   if (error || !data) return "(catalog unavailable)";
   const byCat: Record<string, ProductRow[]> = {};
   for (const r of data as ProductRow[]) (byCat[r.category] ??= []).push(r);
@@ -57,15 +59,23 @@ async function categorySummary(): Promise<string> {
         .map((p) => {
           const attrs = attrLine(p.attributes);
           const uses = (p.use_cases ?? [])
-            .slice(0, 3)
-            .map((u) => u.scenario)
-            .join("; ");
+            .map((u) => `        - ${u.scenario} — ${u.why}`)
+            .join("\n");
+          const meta: string[] = [];
+          if (p.supplier) meta.push(p.supplier);
+          if (p.source_category) meta.push(`src: ${p.source_category}`);
+          if (p.hazardous) meta.push("HAZARDOUS");
+          if (p.consumable) meta.push(`consumable: ${p.consumable}`);
+          if (p.storage_location) meta.push(`storage: ${p.storage_location}`);
+          if (p.typical_site) meta.push(`site: ${p.typical_site}`);
+          const metaStr = meta.length ? ` (${meta.join(" · ")})` : "";
           const parts = [
-            `  • ${p.sku} ${p.name} — €${Number(p.price_eur).toFixed(2)}/${p.unit}${p.supplier ? " (" + p.supplier + ")" : ""}`,
+            `  • ${p.sku} ${p.name} — €${Number(p.price_eur).toFixed(2)}/${p.unit}${metaStr}`,
           ];
           if (p.description) parts.push(`      ${p.description}`);
           if (attrs) parts.push(`      [${attrs}]`);
-          if (uses) parts.push(`      Einsatz: ${uses}`);
+          if (p.keywords && p.keywords.length) parts.push(`      keywords: ${p.keywords.join(", ")}`);
+          if (uses) parts.push(`      Einsatz:\n${uses}`);
           return parts.join("\n");
         })
         .join("\n");
