@@ -252,7 +252,7 @@ function Home() {
                 onClick={reset}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                {inConversation ? "← new request" : "Project: Erlenmatt B3"}
+                {showCatalog ? "← new request" : "Project: Erlenmatt B3"}
               </button>
             </div>
           </div>
