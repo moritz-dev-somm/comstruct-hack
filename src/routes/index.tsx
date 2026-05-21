@@ -725,18 +725,12 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
-// minimal SpeechRecognition types
-declare global {
-  interface SpeechRecognitionEvent extends Event {
-    results: { 0: { 0: { transcript: string } }; length: number }[] & {
-      [index: number]: { 0: { transcript: string } };
-    };
-  }
-  interface SpeechRecognition extends EventTarget {
-    lang: string;
-    interimResults: boolean;
-    onresult: (e: SpeechRecognitionEvent) => void;
-    onerror: (e: Event) => void;
-    start: () => void;
-  }
+// minimal SpeechRecognition types (avoid clashing with lib.dom)
+interface MinimalSpeechRecognition {
+  lang: string;
+  interimResults: boolean;
+  onresult: (e: SpeechRecognitionEvent) => void;
+  onerror: (e: Event) => void;
+  start: () => void;
 }
+export type {};
