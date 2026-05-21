@@ -9,6 +9,8 @@ type ChatMsg = {
   tool_calls?: unknown[];
 };
 
+type UseCase = { scenario: string; why: string };
+
 type ProductRow = {
   sku: string;
   name: string;
@@ -19,6 +21,9 @@ type ProductRow = {
   supplier: string | null;
   hazardous: boolean;
   keywords: string[] | null;
+  description: string | null;
+  attributes: Record<string, unknown> | null;
+  use_cases: UseCase[] | null;
 };
 
 function sbClient() {
@@ -28,11 +33,18 @@ function sbClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+function attrLine(attrs: Record<string, unknown> | null | undefined): string {
+  if (!attrs) return "";
+  const entries = Object.entries(attrs).slice(0, 8);
+  if (!entries.length) return "";
+  return entries.map(([k, v]) => `${k}=${v}`).join(", ");
+}
+
 async function categorySummary(): Promise<string> {
   const sb = sbClient();
   const { data, error } = await sb
     .from("products")
-    .select("sku,name,category,unit,price_eur,supplier")
+    .select("sku,name,category,unit,price_eur,supplier,description,attributes,use_cases")
     .order("category")
     .order("sku")
     .limit(2000);
@@ -42,10 +54,20 @@ async function categorySummary(): Promise<string> {
   return Object.entries(byCat)
     .map(([cat, items]) => {
       const lines = items
-        .map(
-          (p) =>
+        .map((p) => {
+          const attrs = attrLine(p.attributes);
+          const uses = (p.use_cases ?? [])
+            .slice(0, 3)
+            .map((u) => u.scenario)
+            .join("; ");
+          const parts = [
             `  • ${p.sku} ${p.name} — €${Number(p.price_eur).toFixed(2)}/${p.unit}${p.supplier ? " (" + p.supplier + ")" : ""}`,
-        )
+          ];
+          if (p.description) parts.push(`      ${p.description}`);
+          if (attrs) parts.push(`      [${attrs}]`);
+          if (uses) parts.push(`      Einsatz: ${uses}`);
+          return parts.join("\n");
+        })
         .join("\n");
       return `## ${cat} (${items.length})\n${lines}`;
     })
@@ -61,13 +83,15 @@ async function searchProducts(args: {
   const sb = sbClient();
   let q = sb
     .from("products")
-    .select("sku,name,category,source_category,unit,price_eur,supplier,hazardous,keywords");
+    .select(
+      "sku,name,category,source_category,unit,price_eur,supplier,hazardous,keywords,description,attributes,use_cases",
+    );
   if (args.category) q = q.eq("category", args.category);
   if (args.supplier) q = q.ilike("supplier", `%${args.supplier}%`);
   if (args.query) {
     const term = args.query.trim();
     q = q.or(
-      `name.ilike.%${term}%,sku.ilike.%${term}%,source_category.ilike.%${term}%`,
+      `name.ilike.%${term}%,sku.ilike.%${term}%,source_category.ilike.%${term}%,description.ilike.%${term}%`,
     );
   }
   const { data, error } = await q.limit(Math.min(args.limit ?? 20, 50));
