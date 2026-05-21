@@ -124,15 +124,18 @@ function Home() {
   }, [messages, streaming]);
 
   const sortedProducts = useMemo(() => {
+    const filtered = selectedCategory
+      ? products.filter((p) => p.category === selectedCategory)
+      : products;
     const recSet = new Set(recommendedIds);
     const rec: Product[] = [];
     recommendedIds.forEach((sku) => {
-      const p = products.find((x) => x.sku === sku);
+      const p = filtered.find((x) => x.sku === sku);
       if (p) rec.push(p);
     });
-    const rest = products.filter((p) => !recSet.has(p.sku));
+    const rest = filtered.filter((p) => !recSet.has(p.sku));
     return [...rec, ...rest];
-  }, [recommendedIds, products]);
+  }, [recommendedIds, products, selectedCategory]);
 
   async function send(text: string) {
     if (!text.trim() || streaming) return;
