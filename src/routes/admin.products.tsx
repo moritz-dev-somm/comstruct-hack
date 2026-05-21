@@ -79,7 +79,7 @@ function AdminProducts() {
       source_category: draft.source_category || null,
     };
     const { error } = editing
-      ? await supabase.from("products").update(payload).eq("id", editing.id)
+      ? await supabase.from("products").update(payload).eq("sku", editing.sku)
       : await supabase.from("products").insert(payload);
     if (error) {
       toast.error(error.message);
@@ -93,7 +93,7 @@ function AdminProducts() {
 
   async function remove(p: Product) {
     if (!confirm(`Delete ${p.sku} – ${p.name}?`)) return;
-    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    const { error } = await supabase.from("products").delete().eq("sku", p.sku);
     if (error) {
       toast.error(error.message);
       return;

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type Product = {
-  id: string;
   sku: string;
   name: string;
   category: string;
@@ -32,7 +31,6 @@ export const SITE_CATEGORIES = [
 ] as const;
 
 type Row = {
-  id: string;
   sku: string;
   name: string;
   category: string;
@@ -50,7 +48,6 @@ type Row = {
 
 export function rowToProduct(r: Row): Product {
   return {
-    id: r.id,
     sku: r.sku,
     name: r.name,
     category: r.category,
