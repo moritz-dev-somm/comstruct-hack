@@ -469,6 +469,8 @@ function ConversationView({
   scrollRef,
   sortedProducts,
   recommendedIds,
+  selectedCategory,
+  onClearCategory,
   onResetRecommendations,
   onSuggestion,
 }: {
@@ -478,6 +480,8 @@ function ConversationView({
   scrollRef: React.RefObject<HTMLDivElement | null>;
   sortedProducts: Product[];
   recommendedIds: string[];
+  selectedCategory: string | null;
+  onClearCategory: () => void;
   onResetRecommendations: () => void;
   onSuggestion: (s: string) => void;
 }) {
