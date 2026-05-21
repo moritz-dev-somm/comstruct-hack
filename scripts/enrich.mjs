@@ -86,7 +86,10 @@ Antworte ausschließlich über den Tool-Call save_product_info.`;
   if (!call) throw new Error("no tool call: " + JSON.stringify(data).slice(0, 400));
   const args = JSON.parse(call.function.arguments);
 
-  const mergedAttrs = { ...(p.attributes || {}), ...args.attributes };
+  const attrsObj = Array.isArray(args.attributes)
+    ? Object.fromEntries(args.attributes.filter((a) => a && a.key).map((a) => [a.key, a.value]))
+    : (args.attributes || {});
+  const mergedAttrs = { ...(p.attributes || {}), ...attrsObj };
   const { error } = await sb.from("products").update({
     description: args.description,
     attributes: mergedAttrs,
