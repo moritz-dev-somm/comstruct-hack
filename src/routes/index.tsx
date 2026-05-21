@@ -56,7 +56,7 @@ type CategoryTileData = {
 // taxonomy. Out-of-scope groups (raw materials, HVAC, plumbing, pipe & tubing,
 // office, material handling) are intentionally omitted — those are A-materials
 // or non-site categories. Icons from lucide-react (MIT).
-const CATEGORY_TILES: CategoryTile[] = [
+const CATEGORY_TILES: CategoryTileData[] = [
   { label: "Fasteners",   icon: Bolt,     prompt: "Show me fasteners — screws, nuts, bolts, anchors" },
   { label: "Safety / PPE", icon: HardHat, prompt: "Show me safety gear and PPE" },
   { label: "Hand Tools",  icon: Hammer,   prompt: "Show me hand tools" },
