@@ -20,6 +20,9 @@ type ProductRow = {
   price_eur: number | string;
   supplier: string | null;
   hazardous: boolean;
+  consumable: string | null;
+  storage_location: string | null;
+  typical_site: string | null;
   keywords: string[] | null;
   description: string | null;
   attributes: Record<string, unknown> | null;
