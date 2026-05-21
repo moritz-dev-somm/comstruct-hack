@@ -948,18 +948,27 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 function CartDrawer({ onClose }: { onClose: () => void }) {
   const cart = useCart();
-  const decision = useCheckoutDecision(cart.items);
-  const needsApproval = decision.action === "requires_approval";
+  const orders = useOrders();
+  const navigate = useNavigate();
+  const tier = tierFor(cart.subtotal);
 
   function submit() {
-    if (needsApproval) {
-      toast.success("Sent for PM approval");
-    } else {
-      toast.success("Order sent to supplier");
-    }
+    if (cart.items.length === 0) return;
+    const created = orders.createFromCart(cart.items);
     cart.clear();
     onClose();
+    if (created.tier === "auto") toast.success(`${created.id} sent to supplier`);
+    else if (created.tier === "pm") toast.success(`${created.id} sent to ${PM.name} for approval`);
+    else toast.success(`${created.id} sent to ${CENTRAL.name} for approval`);
+    navigate({ to: "/orders" });
   }
+
+  const ctaLabel =
+    tier === "auto"
+      ? "Send order to supplier"
+      : tier === "pm"
+        ? "Send for PM approval"
+        : "Send for central approval";
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -1012,7 +1021,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
           ))}
         </div>
         <div className="border-t p-4 space-y-3">
-          {cart.items.length > 0 && <DecisionSummary decision={decision} />}
+          {cart.items.length > 0 && <ApprovalTierPill tier={tier} subtotal={cart.subtotal} />}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-semibold">{formatEUR(cart.subtotal)}</span>
@@ -1022,7 +1031,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
             onClick={submit}
             className="w-full h-12 rounded-lg bg-brand text-brand-foreground font-semibold disabled:opacity-40"
           >
-            {needsApproval ? "Send for PM approval" : "Send order to supplier"}
+            {ctaLabel}
           </button>
           <Link
             to="/settings"
@@ -1036,27 +1045,31 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
-function DecisionSummary({ decision }: { decision: CheckoutDecision }) {
-  if (decision.hits.length === 0) {
-    return (
-      <div className="rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-xs">
-        <div className="font-semibold text-brand">Within budget — auto-dispatch</div>
-        <div className="text-muted-foreground mt-0.5">
-          No approval needed. Order goes straight to the supplier.
-        </div>
-      </div>
-    );
-  }
+function ApprovalTierPill({ tier, subtotal }: { tier: ApprovalTier; subtotal: number }) {
+  const styles = {
+    auto: {
+      box: "border-emerald-500/40 bg-emerald-500/10",
+      title: "text-emerald-700 dark:text-emerald-400",
+      label: "Auto-approved",
+      body: `Subtotal ${formatEUR(subtotal)} is under ${formatEUR(TIER_THRESHOLDS.pm)} — order ships straight to the supplier.`,
+    },
+    pm: {
+      box: "border-amber-500/40 bg-amber-500/10",
+      title: "text-amber-700 dark:text-amber-400",
+      label: `Needs PM approval — ${PM.name}`,
+      body: `Subtotal ${formatEUR(subtotal)} is between ${formatEUR(TIER_THRESHOLDS.pm)} and ${formatEUR(TIER_THRESHOLDS.central)}.`,
+    },
+    central: {
+      box: "border-rose-500/40 bg-rose-500/10",
+      title: "text-rose-700 dark:text-rose-400",
+      label: `Needs central approval — ${CENTRAL.name}`,
+      body: `Subtotal ${formatEUR(subtotal)} is above ${formatEUR(TIER_THRESHOLDS.central)}.`,
+    },
+  }[tier];
   return (
-    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs space-y-1">
-      <div className="font-semibold text-amber-700 dark:text-amber-400">
-        Needs PM approval
-      </div>
-      <ul className="text-muted-foreground space-y-0.5">
-        {decision.hits.map((h, idx) => (
-          <li key={idx}>• {h.message}</li>
-        ))}
-      </ul>
+    <div className={`rounded-lg border px-3 py-2 text-xs ${styles.box}`}>
+      <div className={`font-semibold ${styles.title}`}>{styles.label}</div>
+      <div className="text-muted-foreground mt-0.5">{styles.body}</div>
     </div>
   );
 }
