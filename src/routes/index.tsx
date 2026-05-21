@@ -240,7 +240,6 @@ function Home() {
             input={input}
             setInput={setInput}
             send={send}
-            startVoice={startVoice}
             inputRef={inputRef}
           />
         ) : (
@@ -257,19 +256,21 @@ function Home() {
         )}
       </main>
 
-      {/* Sticky bottom input in conversation mode */}
+      {/* Sticky bottom bar in conversation mode: chat input + separate, distinct voice button */}
       {inConversation && (
         <div className="sticky bottom-0 z-30 border-t bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
-          <div className="mx-auto max-w-3xl px-4 py-3">
-            <ChatInput
-              value={input}
-              onChange={setInput}
-              onSend={() => send(input)}
-              onVoice={startVoice}
-              disabled={streaming}
-              inputRef={inputRef}
-              placeholder="Ask a follow-up…"
-            />
+          <div className="mx-auto max-w-3xl px-4 py-3 flex items-end gap-3">
+            <div className="flex-1">
+              <ChatInput
+                value={input}
+                onChange={setInput}
+                onSend={() => send(input)}
+                disabled={streaming}
+                inputRef={inputRef}
+                placeholder="Ask a follow-up…"
+              />
+            </div>
+            <VoiceButton size="compact" onTranscript={(t) => send(t)} />
           </div>
         </div>
       )}
