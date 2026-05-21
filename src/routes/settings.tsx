@@ -59,10 +59,10 @@ function SettingsPage() {
           />
           <div className="rounded-xl border bg-card p-4">
             <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Per-order cap (CHF)
+              Per-order cap (EUR)
             </label>
             <div className="mt-2 flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">CHF</span>
+              <span className="text-sm text-muted-foreground">€</span>
               <input
                 type="number"
                 min={0}
@@ -91,7 +91,7 @@ function SettingsPage() {
                 >
                   <span className="font-medium text-sm">{cat}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">CHF</span>
+                    <span className="text-xs text-muted-foreground">€</span>
                     <input
                       type="number"
                       min={0}
