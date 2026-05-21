@@ -46,6 +46,28 @@ const SUGGESTED_CHIPS = [
   "Concrete drilling — bits, plugs, dust mask",
 ];
 
+type CategoryTile = {
+  label: string;
+  icon: LucideIcon;
+  prompt: string;
+};
+
+// C-material categories for foremen, distilled from McMaster-Carr's top-level
+// taxonomy. Out-of-scope groups (raw materials, HVAC, plumbing, pipe & tubing,
+// office, material handling) are intentionally omitted — those are A-materials
+// or non-site categories. Icons from lucide-react (MIT).
+const CATEGORY_TILES: CategoryTile[] = [
+  { label: "Fasteners",   icon: Bolt,     prompt: "Show me fasteners — screws, nuts, bolts, anchors" },
+  { label: "Safety / PPE", icon: HardHat, prompt: "Show me safety gear and PPE" },
+  { label: "Hand Tools",  icon: Hammer,   prompt: "Show me hand tools" },
+  { label: "Power & Light", icon: Zap,    prompt: "Show me batteries, cables, and site lighting" },
+  { label: "Sealing",     icon: Droplets, prompt: "Show me sealants, silicone, and adhesives" },
+  { label: "Cut & Drill", icon: Drill,    prompt: "Show me drill bits, blades, and cutting tools" },
+  { label: "Abrasives",   icon: Disc3,    prompt: "Show me sanding pads, discs, and abrasives" },
+  { label: "Measuring",   icon: Ruler,    prompt: "Show me tape measures, levels, and layout tools" },
+  { label: "Anchors",     icon: Anchor,   prompt: "Show me anchors, hooks, and suspending hardware" },
+];
+
 const THINKING_WORDS = [
   "Checking the catalog…",
   "Asking the procurement team…",
