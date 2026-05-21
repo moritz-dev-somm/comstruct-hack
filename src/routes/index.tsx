@@ -6,11 +6,10 @@ import {
   ArrowUp,
   Bolt,
   Check,
-  Disc3,
-  Drill,
   Droplets,
   Hammer,
   HardHat,
+  Package,
   Plus,
   Ruler,
   SlidersHorizontal,
@@ -51,23 +50,23 @@ const SUGGESTED_CHIPS = [
 type CategoryTileData = {
   label: string;
   icon: LucideIcon;
-  prompt: string;
+  // Must match the `category` column in the products table exactly so
+  // clicking a tile filters the catalog deterministically.
+  category: string;
 };
 
-// C-material categories for foremen, distilled from McMaster-Carr's top-level
-// taxonomy. Out-of-scope groups (raw materials, HVAC, plumbing, pipe & tubing,
-// office, material handling) are intentionally omitted — those are A-materials
-// or non-site categories. Icons from lucide-react (MIT).
+// Tiles mirror the canonical `category` values in the products table.
+// Keep this list in sync with the DB — if a new category is added, add a
+// tile here (and vice versa) so the filter never shows an empty result.
 const CATEGORY_TILES: CategoryTileData[] = [
-  { label: "Fasteners",   icon: Bolt,     prompt: "Show me fasteners — screws, nuts, bolts, anchors" },
-  { label: "Safety / PPE", icon: HardHat, prompt: "Show me safety gear and PPE" },
-  { label: "Hand Tools",  icon: Hammer,   prompt: "Show me hand tools" },
-  { label: "Power & Light", icon: Zap,    prompt: "Show me batteries, cables, and site lighting" },
-  { label: "Sealing",     icon: Droplets, prompt: "Show me sealants, silicone, and adhesives" },
-  { label: "Cut & Drill", icon: Drill,    prompt: "Show me drill bits, blades, and cutting tools" },
-  { label: "Abrasives",   icon: Disc3,    prompt: "Show me sanding pads, discs, and abrasives" },
-  { label: "Measuring",   icon: Ruler,    prompt: "Show me tape measures, levels, and layout tools" },
-  { label: "Anchors",     icon: Anchor,   prompt: "Show me anchors, hooks, and suspending hardware" },
+  { label: "Fasteners",     icon: Bolt,     category: "Fasteners" },
+  { label: "Safety / PPE",  icon: HardHat,  category: "Safety" },
+  { label: "Hand Tools",    icon: Hammer,   category: "Hand Tools" },
+  { label: "Power & Light", icon: Zap,      category: "Power & Light" },
+  { label: "Sealing",       icon: Droplets, category: "Sealing" },
+  { label: "Measuring",     icon: Ruler,    category: "Measuring" },
+  { label: "Anchors",       icon: Anchor,   category: "Anchors" },
+  { label: "Other",         icon: Package,  category: "Other" },
 ];
 
 const THINKING_WORDS = [
@@ -87,11 +86,13 @@ function Home() {
   const { data: products = [] } = useProducts();
   const [aMaterialFlag, setAMaterialFlag] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const cart = useCart();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const inConversation = messages.length > 0;
+  const showCatalog = inConversation || selectedCategory !== null;
 
   // restore localStorage thread
   useEffect(() => {
@@ -124,15 +125,18 @@ function Home() {
   }, [messages, streaming]);
 
   const sortedProducts = useMemo(() => {
+    const filtered = selectedCategory
+      ? products.filter((p) => p.category === selectedCategory)
+      : products;
     const recSet = new Set(recommendedIds);
     const rec: Product[] = [];
     recommendedIds.forEach((sku) => {
-      const p = products.find((x) => x.sku === sku);
+      const p = filtered.find((x) => x.sku === sku);
       if (p) rec.push(p);
     });
-    const rest = products.filter((p) => !recSet.has(p.sku));
+    const rest = filtered.filter((p) => !recSet.has(p.sku));
     return [...rec, ...rest];
-  }, [recommendedIds, products]);
+  }, [recommendedIds, products, selectedCategory]);
 
   async function send(text: string) {
     if (!text.trim() || streaming) return;
@@ -229,6 +233,7 @@ function Home() {
   function reset() {
     setMessages([]);
     setRecommendedIds([]);
+    setSelectedCategory(null);
     localStorage.removeItem("comstruct-chat");
   }
 
@@ -247,7 +252,7 @@ function Home() {
                 onClick={reset}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                {inConversation ? "← new request" : "Project: Erlenmatt B3"}
+                {showCatalog ? "← new request" : "Project: Erlenmatt B3"}
               </button>
             </div>
           </div>
@@ -276,11 +281,12 @@ function Home() {
       </header>
 
       <main className="flex-1 flex flex-col">
-        {!inConversation ? (
+        {!showCatalog ? (
           <HeroView
             input={input}
             setInput={setInput}
             send={send}
+            onSelectCategory={setSelectedCategory}
             inputRef={inputRef}
           />
         ) : (
@@ -291,6 +297,8 @@ function Home() {
             scrollRef={scrollRef}
             sortedProducts={sortedProducts}
             recommendedIds={recommendedIds}
+            selectedCategory={selectedCategory}
+            onClearCategory={() => setSelectedCategory(null)}
             onResetRecommendations={() => setRecommendedIds([])}
             onSuggestion={(s) => send(s)}
           />
@@ -359,11 +367,13 @@ function HeroView({
   input,
   setInput,
   send,
+  onSelectCategory,
   inputRef,
 }: {
   input: string;
   setInput: (v: string) => void;
   send: (v: string) => void;
+  onSelectCategory: (c: string) => void;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   return (
@@ -422,7 +432,7 @@ function HeroView({
           </div>
           <div className="mt-4 grid grid-cols-3 gap-3">
             {CATEGORY_TILES.map((c) => (
-              <CategoryTile key={c.label} tile={c} onSelect={() => send(c.prompt)} />
+              <CategoryTile key={c.label} tile={c} onSelect={() => onSelectCategory(c.category)} />
             ))}
           </div>
         </div>
@@ -459,6 +469,8 @@ function ConversationView({
   scrollRef,
   sortedProducts,
   recommendedIds,
+  selectedCategory,
+  onClearCategory,
   onResetRecommendations,
   onSuggestion,
 }: {
@@ -468,6 +480,8 @@ function ConversationView({
   scrollRef: React.RefObject<HTMLDivElement | null>;
   sortedProducts: Product[];
   recommendedIds: string[];
+  selectedCategory: string | null;
+  onClearCategory: () => void;
   onResetRecommendations: () => void;
   onSuggestion: (s: string) => void;
 }) {
@@ -509,7 +523,11 @@ function ConversationView({
         <div className="mx-auto max-w-5xl px-4 py-6">
           <div className="flex items-end justify-between mb-4 border-b-2 border-brand/70 pb-2">
             <h2 className="text-xl font-bold text-brand">
-              {recommendedIds.length > 0 ? "Recommended for this job" : "Catalog"}
+              {recommendedIds.length > 0
+                ? "Recommended for this job"
+                : selectedCategory
+                  ? selectedCategory
+                  : "Catalog"}
             </h2>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">{sortedProducts.length} Products</span>
@@ -519,6 +537,14 @@ function ConversationView({
                   className="text-sm font-medium text-brand hover:underline"
                 >
                   Show all
+                </button>
+              )}
+              {selectedCategory && (
+                <button
+                  onClick={onClearCategory}
+                  className="text-sm font-medium text-brand hover:underline"
+                >
+                  Clear filter
                 </button>
               )}
             </div>
