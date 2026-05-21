@@ -13,6 +13,7 @@ import {
   HardHat,
   Plus,
   Ruler,
+  SlidersHorizontal,
   ShoppingCart,
   X,
   Zap,
