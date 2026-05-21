@@ -523,7 +523,7 @@ function ConversationView({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {sortedProducts.map((p) => (
               <ProductCard
-                key={p.id}
+                key={p.sku}
                 product={p}
                 recommended={recSet.has(p.sku)}
                 dimmed={recommendedIds.length > 0 && !recSet.has(p.sku)}
