@@ -20,6 +20,8 @@ export type Database = {
           category: string
           consumable: string | null
           created_at: string
+          description: string | null
+          enriched_at: string | null
           hazardous: boolean
           id: string
           keywords: string[]
@@ -32,12 +34,15 @@ export type Database = {
           typical_site: string | null
           unit: string
           updated_at: string
+          use_cases: Json
         }
         Insert: {
           attributes?: Json
           category: string
           consumable?: string | null
           created_at?: string
+          description?: string | null
+          enriched_at?: string | null
           hazardous?: boolean
           id?: string
           keywords?: string[]
@@ -50,12 +55,15 @@ export type Database = {
           typical_site?: string | null
           unit?: string
           updated_at?: string
+          use_cases?: Json
         }
         Update: {
           attributes?: Json
           category?: string
           consumable?: string | null
           created_at?: string
+          description?: string | null
+          enriched_at?: string | null
           hazardous?: boolean
           id?: string
           keywords?: string[]
@@ -68,6 +76,7 @@ export type Database = {
           typical_site?: string | null
           unit?: string
           updated_at?: string
+          use_cases?: Json
         }
         Relationships: []
       }
