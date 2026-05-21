@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          attributes: Json
+          category: string
+          consumable: string | null
+          created_at: string
+          hazardous: boolean
+          id: string
+          keywords: string[]
+          name: string
+          price_eur: number
+          sku: string
+          source_category: string | null
+          storage_location: string | null
+          supplier: string | null
+          typical_site: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          attributes?: Json
+          category: string
+          consumable?: string | null
+          created_at?: string
+          hazardous?: boolean
+          id?: string
+          keywords?: string[]
+          name: string
+          price_eur?: number
+          sku: string
+          source_category?: string | null
+          storage_location?: string | null
+          supplier?: string | null
+          typical_site?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          attributes?: Json
+          category?: string
+          consumable?: string | null
+          created_at?: string
+          hazardous?: boolean
+          id?: string
+          keywords?: string[]
+          name?: string
+          price_eur?: number
+          sku?: string
+          source_category?: string | null
+          storage_location?: string | null
+          supplier?: string | null
+          typical_site?: string | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
