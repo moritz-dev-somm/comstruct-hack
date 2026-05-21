@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type UseCase = { scenario: string; why: string };
+
 export type Product = {
   sku: string;
   name: string;
@@ -15,6 +17,9 @@ export type Product = {
   typicalSite: string | null;
   attributes: Record<string, unknown>;
   keywords: string[];
+  description: string | null;
+  useCases: UseCase[];
+  enrichedAt: string | null;
 };
 
 export const SITE_CATEGORIES = [
