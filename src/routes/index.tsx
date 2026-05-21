@@ -1,7 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowUp, Check, HardHat, Plus, ShoppingCart, X } from "lucide-react";
+import {
+  Anchor,
+  ArrowUp,
+  Bolt,
+  Check,
+  Disc3,
+  Drill,
+  Droplets,
+  Hammer,
+  HardHat,
+  Plus,
+  Ruler,
+  ShoppingCart,
+  X,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { CATALOG, BUNDLES, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { VoiceButton } from "@/components/VoiceButton";
@@ -28,6 +44,28 @@ const SUGGESTED_CHIPS = [
   "I need to seal around a window — what do I need?",
   "Standard drywall kit for ~50 m² wall",
   "Concrete drilling — bits, plugs, dust mask",
+];
+
+type CategoryTileData = {
+  label: string;
+  icon: LucideIcon;
+  prompt: string;
+};
+
+// C-material categories for foremen, distilled from McMaster-Carr's top-level
+// taxonomy. Out-of-scope groups (raw materials, HVAC, plumbing, pipe & tubing,
+// office, material handling) are intentionally omitted — those are A-materials
+// or non-site categories. Icons from lucide-react (MIT).
+const CATEGORY_TILES: CategoryTileData[] = [
+  { label: "Fasteners",   icon: Bolt,     prompt: "Show me fasteners — screws, nuts, bolts, anchors" },
+  { label: "Safety / PPE", icon: HardHat, prompt: "Show me safety gear and PPE" },
+  { label: "Hand Tools",  icon: Hammer,   prompt: "Show me hand tools" },
+  { label: "Power & Light", icon: Zap,    prompt: "Show me batteries, cables, and site lighting" },
+  { label: "Sealing",     icon: Droplets, prompt: "Show me sealants, silicone, and adhesives" },
+  { label: "Cut & Drill", icon: Drill,    prompt: "Show me drill bits, blades, and cutting tools" },
+  { label: "Abrasives",   icon: Disc3,    prompt: "Show me sanding pads, discs, and abrasives" },
+  { label: "Measuring",   icon: Ruler,    prompt: "Show me tape measures, levels, and layout tools" },
+  { label: "Anchors",     icon: Anchor,   prompt: "Show me anchors, hooks, and suspending hardware" },
 ];
 
 const THINKING_WORDS = [
@@ -390,20 +428,35 @@ function HeroView({
             or browse by category
             <div className="flex-1 h-px bg-border" />
           </div>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {["Fasteners", "PPE", "Sealants", "Tools", "Tape", "Batteries"].map((c) => (
-              <button
-                key={c}
-                onClick={() => send(`Show me ${c.toLowerCase()}`)}
-                className="rounded-xl border bg-card hover:bg-accent p-5 text-left font-semibold"
-              >
-                {c}
-              </button>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {CATEGORY_TILES.map((c) => (
+              <CategoryTile key={c.label} tile={c} onSelect={() => send(c.prompt)} />
             ))}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function CategoryTile({
+  tile,
+  onSelect,
+}: {
+  tile: CategoryTileData;
+  onSelect: () => void;
+}) {
+  const Icon = tile.icon;
+  return (
+    <button
+      onClick={onSelect}
+      className="group flex flex-col items-center justify-center gap-2 rounded-xl border bg-card p-4 aspect-square text-center transition-colors hover:bg-accent hover:border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+    >
+      <span className="grid size-12 place-items-center rounded-lg bg-brand/10 text-brand transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
+        <Icon className="size-6" strokeWidth={2} />
+      </span>
+      <span className="text-xs font-semibold leading-tight">{tile.label}</span>
+    </button>
   );
 }
 
