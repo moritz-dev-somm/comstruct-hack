@@ -1,24 +1,26 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type CartItem = {
-  productId: number;
+  productId: string; // sku
   name: string;
   qty: number;
-  price: number;
+  price: number; // EUR
+  category: string;
+  unit: string;
 };
 
 type CartCtx = {
   items: CartItem[];
   add: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
-  setQty: (productId: number, qty: number) => void;
-  remove: (productId: number) => void;
+  setQty: (productId: string, qty: number) => void;
+  remove: (productId: string) => void;
   subtotal: number;
   count: number;
   clear: () => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "comstruct-cart-v1";
+const KEY = "comstruct-cart-v2";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
@@ -45,7 +47,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           p.productId === item.productId ? { ...p, qty: p.qty + qty } : p,
         );
       }
-      return [...prev, { productId: item.productId, name: item.name, price: item.price, qty }];
+      return [...prev, { ...item, qty }];
     });
   };
 

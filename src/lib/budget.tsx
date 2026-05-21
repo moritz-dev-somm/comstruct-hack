@@ -7,26 +7,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CATALOG } from "./catalog";
+import { SITE_CATEGORIES } from "./catalog";
 import type { CartItem } from "./cart";
 
-/* -------------------------------------------------------------------------- */
-/* Types                                                                      */
-/* -------------------------------------------------------------------------- */
-
-/** Action taken when a checkout matches (or fails) a rule. */
 export type CheckoutAction = "auto_dispatch" | "requires_approval";
 
-/**
- * Custom rule structure. Evaluation is intentionally NOT implemented yet —
- * we ship the shape so the UI and persistence work; the rule engine lands
- * in a follow-up.
- */
 export type CustomRule = {
   id: string;
   name: string;
   enabled: boolean;
-  /** Free-form condition placeholder. Concrete predicates come later. */
   when: {
     description?: string;
     supplierIn?: string[];
@@ -38,22 +27,19 @@ export type CustomRule = {
 };
 
 export type BudgetSettings = {
-  /** Global budget cap per order, in CHF. Orders above this need approval. */
+  /** Global budget cap per order, in EUR. Orders above this need approval. */
   globalBudget: number;
-  /** Optional per-category cap. Empty string means "no override". */
+  /** Optional per-category cap. null means "no override". */
   perCategory: Record<string, number | null>;
-  /** Custom rules. Structure-only for now. */
   customRules: CustomRule[];
 };
 
 export type RuleHit = {
-  /** Stable id of the offending check. */
   code:
     | "global_budget_exceeded"
     | "category_budget_exceeded"
     | "custom_rule_matched";
   message: string;
-  /** Optional details for the UI. */
   category?: string;
   amount?: number;
   limit?: number;
@@ -63,18 +49,11 @@ export type RuleHit = {
 export type CheckoutDecision = {
   action: CheckoutAction;
   hits: RuleHit[];
-  /** Subtotals broken down by category, for display. */
   byCategory: Record<string, number>;
   subtotal: number;
 };
 
-/* -------------------------------------------------------------------------- */
-/* Defaults                                                                   */
-/* -------------------------------------------------------------------------- */
-
-export const ALL_CATEGORIES = Array.from(
-  new Set(CATALOG.map((p) => p.category)),
-).sort();
+export const ALL_CATEGORIES = [...SITE_CATEGORIES];
 
 const DEFAULTS: BudgetSettings = {
   globalBudget: 1000,
@@ -82,7 +61,7 @@ const DEFAULTS: BudgetSettings = {
   customRules: [],
 };
 
-const KEY = "comstruct-budget-v1";
+const KEY = "comstruct-budget-v2";
 
 function loadFromStorage(): BudgetSettings {
   if (typeof window === "undefined") return DEFAULTS;
@@ -90,7 +69,6 @@ function loadFromStorage(): BudgetSettings {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULTS;
     const parsed = JSON.parse(raw) as Partial<BudgetSettings>;
-    // Merge so new categories show up after catalog changes
     const perCategory: Record<string, number | null> = {
       ...DEFAULTS.perCategory,
       ...(parsed.perCategory ?? {}),
@@ -105,14 +83,6 @@ function loadFromStorage(): BudgetSettings {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Evaluation                                                                 */
-/* -------------------------------------------------------------------------- */
-
-function categoryFor(productId: number): string {
-  return CATALOG.find((p) => p.id === productId)?.category ?? "Other";
-}
-
 export function evaluateCheckout(
   items: CartItem[],
   settings: BudgetSettings,
@@ -120,7 +90,7 @@ export function evaluateCheckout(
   const byCategory: Record<string, number> = {};
   let subtotal = 0;
   for (const it of items) {
-    const cat = categoryFor(it.productId);
+    const cat = it.category || "Other";
     const line = it.qty * it.price;
     byCategory[cat] = (byCategory[cat] ?? 0) + line;
     subtotal += line;
@@ -131,7 +101,7 @@ export function evaluateCheckout(
   if (subtotal > settings.globalBudget) {
     hits.push({
       code: "global_budget_exceeded",
-      message: `Order exceeds the CHF ${settings.globalBudget.toFixed(0)} budget.`,
+      message: `Order exceeds the €${settings.globalBudget.toFixed(0)} budget.`,
       amount: subtotal,
       limit: settings.globalBudget,
     });
@@ -142,16 +112,13 @@ export function evaluateCheckout(
     if (typeof cap === "number" && total > cap) {
       hits.push({
         code: "category_budget_exceeded",
-        message: `${cat} exceeds its CHF ${cap.toFixed(0)} cap (CHF ${total.toFixed(2)}).`,
+        message: `${cat} exceeds its €${cap.toFixed(0)} cap (€${total.toFixed(2)}).`,
         category: cat,
         amount: total,
         limit: cap,
       });
     }
   }
-
-  // Custom rules are structured but not yet evaluated. Their definitions are
-  // persisted so the rule engine can wire in later without a UI change.
 
   return {
     action: hits.length > 0 ? "requires_approval" : "auto_dispatch",
@@ -160,10 +127,6 @@ export function evaluateCheckout(
     subtotal,
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/* Context                                                                    */
-/* -------------------------------------------------------------------------- */
 
 type BudgetCtx = {
   settings: BudgetSettings;
@@ -190,43 +153,26 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     setSettings((s) => ({ ...s, globalBudget: Math.max(0, n) }));
   }, []);
 
-  const setCategoryBudget = useCallback(
-    (category: string, n: number | null) => {
-      setSettings((s) => ({
-        ...s,
-        perCategory: { ...s.perCategory, [category]: n },
-      }));
-    },
-    [],
-  );
+  const setCategoryBudget = useCallback((category: string, n: number | null) => {
+    setSettings((s) => ({ ...s, perCategory: { ...s.perCategory, [category]: n } }));
+  }, []);
 
   const addCustomRule: BudgetCtx["addCustomRule"] = useCallback((rule) => {
     setSettings((s) => ({
       ...s,
-      customRules: [
-        ...s.customRules,
-        { ...rule, id: crypto.randomUUID() },
-      ],
+      customRules: [...s.customRules, { ...rule, id: crypto.randomUUID() }],
     }));
   }, []);
 
-  const updateCustomRule: BudgetCtx["updateCustomRule"] = useCallback(
-    (id, patch) => {
-      setSettings((s) => ({
-        ...s,
-        customRules: s.customRules.map((r) =>
-          r.id === id ? { ...r, ...patch } : r,
-        ),
-      }));
-    },
-    [],
-  );
-
-  const removeCustomRule = useCallback((id: string) => {
+  const updateCustomRule: BudgetCtx["updateCustomRule"] = useCallback((id, patch) => {
     setSettings((s) => ({
       ...s,
-      customRules: s.customRules.filter((r) => r.id !== id),
+      customRules: s.customRules.map((r) => (r.id === id ? { ...r, ...patch } : r)),
     }));
+  }, []);
+
+  const removeCustomRule = useCallback((id: string) => {
+    setSettings((s) => ({ ...s, customRules: s.customRules.filter((r) => r.id !== id) }));
   }, []);
 
   const reset = useCallback(() => setSettings(DEFAULTS), []);
@@ -241,15 +187,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       removeCustomRule,
       reset,
     }),
-    [
-      settings,
-      setGlobalBudget,
-      setCategoryBudget,
-      addCustomRule,
-      updateCustomRule,
-      removeCustomRule,
-      reset,
-    ],
+    [settings, setGlobalBudget, setCategoryBudget, addCustomRule, updateCustomRule, removeCustomRule, reset],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
@@ -261,7 +199,6 @@ export function useBudget() {
   return c;
 }
 
-/** Convenience: evaluate the current cart against current settings. */
 export function useCheckoutDecision(items: CartItem[]): CheckoutDecision {
   const { settings } = useBudget();
   return useMemo(() => evaluateCheckout(items, settings), [items, settings]);
