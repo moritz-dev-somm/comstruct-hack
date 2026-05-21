@@ -50,23 +50,23 @@ const SUGGESTED_CHIPS = [
 type CategoryTileData = {
   label: string;
   icon: LucideIcon;
-  prompt: string;
+  // Must match the `category` column in the products table exactly so
+  // clicking a tile filters the catalog deterministically.
+  category: string;
 };
 
-// C-material categories for foremen, distilled from McMaster-Carr's top-level
-// taxonomy. Out-of-scope groups (raw materials, HVAC, plumbing, pipe & tubing,
-// office, material handling) are intentionally omitted — those are A-materials
-// or non-site categories. Icons from lucide-react (MIT).
+// Tiles mirror the canonical `category` values in the products table.
+// Keep this list in sync with the DB — if a new category is added, add a
+// tile here (and vice versa) so the filter never shows an empty result.
 const CATEGORY_TILES: CategoryTileData[] = [
-  { label: "Fasteners",   icon: Bolt,     prompt: "Show me fasteners — screws, nuts, bolts, anchors" },
-  { label: "Safety / PPE", icon: HardHat, prompt: "Show me safety gear and PPE" },
-  { label: "Hand Tools",  icon: Hammer,   prompt: "Show me hand tools" },
-  { label: "Power & Light", icon: Zap,    prompt: "Show me batteries, cables, and site lighting" },
-  { label: "Sealing",     icon: Droplets, prompt: "Show me sealants, silicone, and adhesives" },
-  { label: "Cut & Drill", icon: Drill,    prompt: "Show me drill bits, blades, and cutting tools" },
-  { label: "Abrasives",   icon: Disc3,    prompt: "Show me sanding pads, discs, and abrasives" },
-  { label: "Measuring",   icon: Ruler,    prompt: "Show me tape measures, levels, and layout tools" },
-  { label: "Anchors",     icon: Anchor,   prompt: "Show me anchors, hooks, and suspending hardware" },
+  { label: "Fasteners",     icon: Bolt,     category: "Fasteners" },
+  { label: "Safety / PPE",  icon: HardHat,  category: "Safety" },
+  { label: "Hand Tools",    icon: Hammer,   category: "Hand Tools" },
+  { label: "Power & Light", icon: Zap,      category: "Power & Light" },
+  { label: "Sealing",       icon: Droplets, category: "Sealing" },
+  { label: "Measuring",     icon: Ruler,    category: "Measuring" },
+  { label: "Anchors",       icon: Anchor,   category: "Anchors" },
+  { label: "Other",         icon: Package,  category: "Other" },
 ];
 
 const THINKING_WORDS = [
