@@ -467,7 +467,7 @@ function ConversationView({
   thinkingWord: string;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   sortedProducts: Product[];
-  recommendedIds: number[];
+  recommendedIds: string[];
   onResetRecommendations: () => void;
   onSuggestion: (s: string) => void;
 }) {
@@ -525,8 +525,8 @@ function ConversationView({
               <ProductCard
                 key={p.id}
                 product={p}
-                recommended={recSet.has(p.id)}
-                dimmed={recommendedIds.length > 0 && !recSet.has(p.id)}
+                recommended={recSet.has(p.sku)}
+                dimmed={recommendedIds.length > 0 && !recSet.has(p.sku)}
               />
             ))}
           </div>
