@@ -46,7 +46,7 @@ const SUGGESTED_CHIPS = [
   "Concrete drilling — bits, plugs, dust mask",
 ];
 
-type CategoryTile = {
+type CategoryTileData = {
   label: string;
   icon: LucideIcon;
   prompt: string;
