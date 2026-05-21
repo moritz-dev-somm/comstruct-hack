@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { CartProvider } from "@/lib/cart";
+import { BudgetProvider } from "@/lib/budget";
 
 import appCss from "../styles.css?url";
 
