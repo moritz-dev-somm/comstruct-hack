@@ -233,6 +233,7 @@ function Home() {
   function reset() {
     setMessages([]);
     setRecommendedIds([]);
+    setSelectedCategory(null);
     localStorage.removeItem("comstruct-chat");
   }
 
