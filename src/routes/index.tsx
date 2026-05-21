@@ -932,21 +932,38 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
             <div className="text-sm text-muted-foreground text-center py-12">Cart is empty</div>
           )}
           {cart.items.map((i) => (
-            <div key={i.productId} className="flex items-start gap-3 border rounded-lg p-3">
-              <div className="flex-1">
-                <div className="font-medium text-sm">{i.name}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {i.qty} × {formatEUR(i.price)}
+            <div key={i.productId} className="border rounded-lg p-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm leading-tight">{i.name}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {formatEUR(i.price)} / {i.unit}
+                  </div>
                 </div>
+                <button
+                  onClick={() => cart.remove(i.productId)}
+                  className="size-8 grid place-items-center text-muted-foreground hover:text-destructive shrink-0"
+                  aria-label="Remove"
+                >
+                  <X className="size-4" />
+                </button>
               </div>
-              <div className="font-semibold text-sm">{formatEUR(i.qty * i.price)}</div>
-              <button
-                onClick={() => cart.remove(i.productId)}
-                className="text-muted-foreground hover:text-destructive"
-                aria-label="Remove"
-              >
-                <X className="size-4" />
-              </button>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center rounded-md border h-10 overflow-hidden">
+                  <button
+                    onClick={() => cart.setQty(i.productId, i.qty - 1)}
+                    className="w-10 h-full grid place-items-center hover:bg-accent text-lg font-semibold"
+                    aria-label="Decrease"
+                  >−</button>
+                  <span className="px-3 text-base font-bold tabular-nums min-w-[2.5rem] text-center">{i.qty}</span>
+                  <button
+                    onClick={() => cart.setQty(i.productId, i.qty + 1)}
+                    className="w-10 h-full grid place-items-center hover:bg-accent text-lg font-semibold"
+                    aria-label="Increase"
+                  >+</button>
+                </div>
+                <div className="font-bold text-base tabular-nums">{formatEUR(i.qty * i.price)}</div>
+              </div>
             </div>
           ))}
         </div>
