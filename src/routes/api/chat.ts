@@ -189,11 +189,20 @@ function scrub(text: string): string {
 type ToolAcc = { id?: string; name?: string; args: string };
 
 async function callGateway(messages: ChatMsg[], apiKey: string) {
-  return fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const useOpenAI = !!openaiKey;
+  const url = useOpenAI
+    ? "https://api.openai.com/v1/chat/completions"
+    : "https://ai.gateway.lovable.dev/v1/chat/completions";
+  const model = useOpenAI ? "gpt-4o" : "google/gemini-2.5-pro";
+  return fetch(url, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${useOpenAI ? openaiKey : apiKey}`,
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
-      model: "google/gemini-2.5-pro",
+      model,
       stream: true,
       messages,
       tools: TOOLS,
@@ -209,8 +218,10 @@ export const Route = createFileRoute("/api/chat")({
         const messages: ChatMsg[] = Array.isArray(body.messages) ? body.messages : [];
         const cart = body.cart ?? [];
 
-        const apiKey = process.env.LOVABLE_API_KEY;
-        if (!apiKey) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+        const apiKey = process.env.LOVABLE_API_KEY ?? "";
+        if (!apiKey && !process.env.OPENAI_API_KEY) {
+          return new Response("Missing LOVABLE_API_KEY or OPENAI_API_KEY", { status: 500 });
+        }
 
         let summary = "(catalog unavailable)";
         try {
