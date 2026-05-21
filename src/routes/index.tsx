@@ -707,12 +707,4 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
   );
 }
 
-// minimal SpeechRecognition types (avoid clashing with lib.dom)
-interface MinimalSpeechRecognition {
-  lang: string;
-  interimResults: boolean;
-  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
-  onerror: (e: Event) => void;
-  start: () => void;
-}
 export type {};
