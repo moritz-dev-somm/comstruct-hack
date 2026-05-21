@@ -204,7 +204,7 @@ function Home() {
     const rec = new SR();
     rec.lang = "en-US";
     rec.interimResults = false;
-    rec.onresult = (e: SpeechRecognitionEvent) => {
+    rec.onresult = (e) => {
       const text = e.results[0][0].transcript;
       setInput(text);
       send(text);
