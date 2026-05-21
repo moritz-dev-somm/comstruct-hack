@@ -634,9 +634,11 @@ function ProductCard({
 }) {
   const cart = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const inCart = cart.items.find((i) => i.productId === product.sku);
 
-  function add() {
+  function add(e?: React.MouseEvent) {
+    e?.stopPropagation();
     cart.add({
       productId: product.sku,
       name: product.name,
@@ -649,69 +651,253 @@ function ProductCard({
     setTimeout(() => setJustAdded(false), 1500);
   }
 
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
   return (
-    <div
-      className={`group relative rounded-md border bg-card p-4 flex gap-4 transition-opacity duration-300 hover:border-foreground/30 ${
-        dimmed ? "opacity-20 pointer-events-none" : "opacity-100"
-      } ${recommended ? "border-brand border-2" : ""}`}
-    >
-      {recommended && (
-        <div className="absolute -top-2 left-3 bg-brand text-brand-foreground text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-          Pick
-        </div>
-      )}
-
-      {/* Image */}
-      <div className="shrink-0 w-28 h-28 sm:w-32 sm:h-32 bg-muted/50 rounded grid place-items-center text-4xl">
-        📦
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        <h3 className="font-bold text-base leading-tight text-foreground line-clamp-2">
-          {product.name}
-        </h3>
-        {product.description && (
-          <p className="text-sm text-muted-foreground leading-snug mt-1 line-clamp-3">
-            {product.description}
-          </p>
-        )}
-        <div className="mt-auto pt-2 flex items-end justify-between gap-2">
-          <div className="text-xs text-muted-foreground min-w-0">
-            <div className="font-mono truncate">{product.sku}</div>
-            {product.supplier && <div className="truncate">{product.supplier}</div>}
+    <>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setShowDetail(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setShowDetail(true);
+          }
+        }}
+        className={`group relative rounded-md border bg-card p-4 flex gap-4 transition-all duration-300 cursor-pointer hover:border-foreground/30 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-brand/40 ${
+          dimmed ? "opacity-20 pointer-events-none" : "opacity-100"
+        } ${recommended ? "border-brand border-2" : ""}`}
+      >
+        {recommended && (
+          <div className="absolute -top-2 left-3 bg-brand text-brand-foreground text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+            Pick
           </div>
-          {inCart ? (
-            <div className="flex items-center rounded-md border h-11 overflow-hidden shrink-0">
-              <button
-                onClick={() => cart.setQty(product.sku, inCart.qty - 1)}
-                className="w-11 h-full grid place-items-center hover:bg-accent text-xl font-semibold"
-                aria-label="Decrease"
-              >
-                −
-              </button>
-              <span className="px-3 text-base font-bold tabular-nums">{inCart.qty}</span>
-              <button
-                onClick={() => cart.setQty(product.sku, inCart.qty + 1)}
-                className="w-11 h-full grid place-items-center hover:bg-accent text-xl font-semibold"
-                aria-label="Increase"
-              >
-                +
-              </button>
+        )}
+
+        <div className="shrink-0 w-28 h-28 sm:w-32 sm:h-32 bg-muted/50 rounded grid place-items-center text-4xl">
+          📦
+        </div>
+
+        <div className="flex-1 min-w-0 flex flex-col">
+          <h3 className="font-bold text-base leading-tight text-foreground line-clamp-2">
+            {product.name}
+          </h3>
+          {product.description && (
+            <p className="text-sm text-muted-foreground leading-snug mt-1 line-clamp-3">
+              {product.description}
+            </p>
+          )}
+          <div className="mt-auto pt-2 flex items-end justify-between gap-2">
+            <div className="text-xs text-muted-foreground min-w-0">
+              <div className="font-mono truncate">{product.sku}</div>
+              {product.supplier && <div className="truncate">{product.supplier}</div>}
             </div>
-          ) : (
-            <button
-              onClick={add}
-              className="shrink-0 h-11 flex items-stretch rounded-md overflow-hidden bg-foreground text-background font-bold text-sm"
-            >
-              <span className="px-3 grid place-items-center tabular-nums">{formatEUR(product.price)}</span>
-              <span className="w-11 grid place-items-center bg-brand text-brand-foreground">
-                {justAdded ? <Check className="size-5" /> : <Plus className="size-5" />}
-              </span>
-            </button>
+            {inCart ? (
+              <div onClick={stop} className="flex items-center rounded-md border h-11 overflow-hidden shrink-0">
+                <button
+                  onClick={(e) => { stop(e); cart.setQty(product.sku, inCart.qty - 1); }}
+                  className="w-11 h-full grid place-items-center hover:bg-accent text-xl font-semibold"
+                  aria-label="Decrease"
+                >
+                  −
+                </button>
+                <span className="px-3 text-base font-bold tabular-nums">{inCart.qty}</span>
+                <button
+                  onClick={(e) => { stop(e); cart.setQty(product.sku, inCart.qty + 1); }}
+                  className="w-11 h-full grid place-items-center hover:bg-accent text-xl font-semibold"
+                  aria-label="Increase"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={add}
+                className="shrink-0 h-11 flex items-stretch rounded-md overflow-hidden bg-foreground text-background font-bold text-sm"
+              >
+                <span className="px-3 grid place-items-center tabular-nums">{formatEUR(product.price)}</span>
+                <span className="w-11 grid place-items-center bg-brand text-brand-foreground">
+                  {justAdded ? <Check className="size-5" /> : <Plus className="size-5" />}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      {showDetail && (
+        <ProductDetailModal product={product} onClose={() => setShowDetail(false)} />
+      )}
+    </>
+  );
+}
+
+function ProductDetailModal({ product, onClose }: { product: Product; onClose: () => void }) {
+  const cart = useCart();
+  const inCart = cart.items.find((i) => i.productId === product.sku);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  function addOne() {
+    cart.add({
+      productId: product.sku,
+      name: product.name,
+      price: product.price,
+      qty: 1,
+      category: product.category,
+      unit: product.unit,
+    });
+  }
+
+  const attrEntries = Object.entries(product.attributes ?? {}).filter(
+    ([, v]) => v !== null && v !== undefined && String(v).trim() !== ""
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="relative w-full sm:max-w-2xl bg-background sm:rounded-xl shadow-2xl h-full sm:h-auto sm:max-h-[90vh] flex flex-col">
+        <div className="sticky top-0 z-10 flex items-start gap-3 px-5 py-4 border-b bg-background">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+              <span>{product.sku}</span>
+              {product.supplier && <><span>·</span><span className="font-sans">{product.supplier}</span></>}
+            </div>
+            <h2 className="font-bold text-xl leading-tight mt-1">{product.name}</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="size-11 grid place-items-center rounded-md hover:bg-accent shrink-0"
+            aria-label="Close"
+          >
+            <X className="size-6" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          <div className="flex gap-4 items-start">
+            <div className="shrink-0 w-32 h-32 bg-muted/50 rounded grid place-items-center text-5xl">
+              📦
+            </div>
+            <div className="flex-1 min-w-0 space-y-3">
+              <div>
+                <div className="text-3xl font-bold tabular-nums">{formatEUR(product.price)}</div>
+                <div className="text-sm text-muted-foreground">per {product.unit}</div>
+              </div>
+              {inCart ? (
+                <div className="flex items-center rounded-md border h-12 overflow-hidden w-fit">
+                  <button
+                    onClick={() => cart.setQty(product.sku, inCart.qty - 1)}
+                    className="w-12 h-full grid place-items-center hover:bg-accent text-2xl font-semibold"
+                    aria-label="Decrease"
+                  >−</button>
+                  <span className="px-4 text-lg font-bold tabular-nums">{inCart.qty}</span>
+                  <button
+                    onClick={() => cart.setQty(product.sku, inCart.qty + 1)}
+                    className="w-12 h-full grid place-items-center hover:bg-accent text-2xl font-semibold"
+                    aria-label="Increase"
+                  >+</button>
+                </div>
+              ) : (
+                <button
+                  onClick={addOne}
+                  className="h-12 px-5 rounded-md bg-brand text-brand-foreground font-bold flex items-center gap-2"
+                >
+                  <Plus className="size-5" /> Add to cart
+                </button>
+              )}
+              {product.hazardous && (
+                <div className="inline-flex items-center gap-2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 px-3 py-1.5 text-sm font-semibold">
+                  ⚠ Hazardous material
+                </div>
+              )}
+            </div>
+          </div>
+
+          {product.description && (
+            <Section title="About">
+              <p className="text-base leading-relaxed text-foreground/90">{product.description}</p>
+            </Section>
+          )}
+
+          {product.useCases && product.useCases.length > 0 && (
+            <Section title="When to use it">
+              <ul className="space-y-3">
+                {product.useCases.map((uc, i) => (
+                  <li key={i} className="rounded-md border bg-muted/30 p-3">
+                    <div className="font-semibold text-base">{uc.scenario}</div>
+                    {uc.why && (
+                      <div className="text-sm text-muted-foreground mt-1 leading-relaxed">{uc.why}</div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {attrEntries.length > 0 && (
+            <Section title="Specifications">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                {attrEntries.map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-3 border-b border-border/50 py-1.5">
+                    <dt className="text-muted-foreground capitalize">{k.replace(/_/g, " ")}</dt>
+                    <dd className="font-semibold text-right">{String(v)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Section>
+          )}
+
+          {(product.storageLocation || product.typicalSite || product.consumable || product.sourceCategory) && (
+            <Section title="On site">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                {product.typicalSite && <DetailRow label="Typical site" value={product.typicalSite} />}
+                {product.storageLocation && <DetailRow label="Storage" value={product.storageLocation} />}
+                {product.consumable && <DetailRow label="Consumable" value={product.consumable} />}
+                {product.sourceCategory && <DetailRow label="Category" value={product.sourceCategory} />}
+              </dl>
+            </Section>
+          )}
+
+          {product.keywords && product.keywords.length > 0 && (
+            <Section title="Also known as">
+              <div className="flex flex-wrap gap-1.5">
+                {product.keywords.map((k) => (
+                  <span key={k} className="text-xs bg-muted text-muted-foreground rounded-full px-2.5 py-1">
+                    {k}
+                  </span>
+                ))}
+              </div>
+            </Section>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h3 className="text-sm font-bold uppercase tracking-wide text-brand mb-2">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-3 border-b border-border/50 py-1.5">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-semibold text-right">{value}</dd>
     </div>
   );
 }
