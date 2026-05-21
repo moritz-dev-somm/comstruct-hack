@@ -526,7 +526,6 @@ function ChatInput({
   value,
   onChange,
   onSend,
-  onVoice,
   disabled,
   inputRef,
   placeholder,
@@ -535,7 +534,6 @@ function ChatInput({
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
-  onVoice: () => void;
   disabled: boolean;
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   placeholder: string;
@@ -564,14 +562,6 @@ function ChatInput({
         }`}
         style={{ maxHeight: 160 }}
       />
-      <button
-        type="button"
-        onClick={onVoice}
-        className="shrink-0 size-11 grid place-items-center rounded-xl hover:bg-accent text-muted-foreground"
-        aria-label="Voice input"
-      >
-        <Mic className="size-5" />
-      </button>
       <button
         type="button"
         onClick={onSend}
