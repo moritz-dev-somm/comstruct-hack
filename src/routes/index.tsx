@@ -281,11 +281,12 @@ function Home() {
       </header>
 
       <main className="flex-1 flex flex-col">
-        {!inConversation ? (
+        {!showCatalog ? (
           <HeroView
             input={input}
             setInput={setInput}
             send={send}
+            onSelectCategory={setSelectedCategory}
             inputRef={inputRef}
           />
         ) : (
@@ -296,6 +297,8 @@ function Home() {
             scrollRef={scrollRef}
             sortedProducts={sortedProducts}
             recommendedIds={recommendedIds}
+            selectedCategory={selectedCategory}
+            onClearCategory={() => setSelectedCategory(null)}
             onResetRecommendations={() => setRecommendedIds([])}
             onSuggestion={(s) => send(s)}
           />
