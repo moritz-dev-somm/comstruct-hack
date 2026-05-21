@@ -19,7 +19,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { CATALOG, BUNDLES, type Product } from "@/lib/catalog";
+import { useProducts, formatEUR, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { useCheckoutDecision, type CheckoutDecision } from "@/lib/budget";
 import { VoiceButton } from "@/components/VoiceButton";
@@ -83,7 +83,8 @@ function Home() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [thinkingWord, setThinkingWord] = useState(THINKING_WORDS[0]);
-  const [recommendedIds, setRecommendedIds] = useState<number[]>([]);
+  const [recommendedIds, setRecommendedIds] = useState<string[]>([]);
+  const { data: products = [] } = useProducts();
   const [aMaterialFlag, setAMaterialFlag] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const cart = useCart();
@@ -125,13 +126,13 @@ function Home() {
   const sortedProducts = useMemo(() => {
     const recSet = new Set(recommendedIds);
     const rec: Product[] = [];
-    recommendedIds.forEach((id) => {
-      const p = CATALOG.find((x) => x.id === id);
+    recommendedIds.forEach((sku) => {
+      const p = products.find((x) => x.sku === sku);
       if (p) rec.push(p);
     });
-    const rest = CATALOG.filter((p) => !recSet.has(p.id));
+    const rest = products.filter((p) => !recSet.has(p.sku));
     return [...rec, ...rest];
-  }, [recommendedIds]);
+  }, [recommendedIds, products]);
 
   async function send(text: string) {
     if (!text.trim() || streaming) return;
@@ -198,10 +199,8 @@ function Home() {
         break;
       case "recommend":
         setRecommendedIds((prev) => {
-          const ids = evt.productIds as number[];
-          const set = new Set(prev);
-          ids.forEach((i) => set.add(i));
-          return [...prev, ...ids.filter((i) => !prev.includes(i))];
+          const skus = (evt.skus as string[]) ?? [];
+          return [...prev, ...skus.filter((s) => !prev.includes(s))];
         });
         break;
       case "tool":
@@ -214,19 +213,12 @@ function Home() {
 
   function handleTool(name: string, args: Record<string, unknown>) {
     if (name === "add_to_cart") {
-      const p = CATALOG.find((x) => x.id === args.product_id);
+      const sku = args.sku as string;
+      const p = products.find((x) => x.sku === sku);
       if (!p) return;
-      const qty = (args.quantity as number) || p.packSize;
-      cart.add({ productId: p.id, name: p.name, price: p.price, qty });
+      const qty = (args.quantity as number) || 1;
+      cart.add({ productId: p.sku, name: p.name, price: p.price, qty, category: p.category, unit: p.unit });
       toast.success(`Added ${qty}× ${p.name} to cart`);
-    } else if (name === "add_bundle_to_cart") {
-      const b = BUNDLES.find((x) => x.id === args.bundle_id);
-      if (!b) return;
-      b.productIds.forEach((id) => {
-        const p = CATALOG.find((x) => x.id === id);
-        if (p) cart.add({ productId: p.id, name: p.name, price: p.price, qty: p.packSize });
-      });
-      toast.success(`Added bundle: ${b.name}`);
     } else if (name === "flag_as_a_material") {
       setAMaterialFlag((args.what_they_asked_for as string) || "this item");
     }
@@ -272,7 +264,7 @@ function Home() {
               className="relative inline-flex items-center gap-2 rounded-full border px-3 h-10 text-sm font-medium hover:bg-accent"
             >
               <ShoppingCart className="size-4" />
-              <span>CHF {cart.subtotal.toFixed(2)}</span>
+              <span>{formatEUR(cart.subtotal)}</span>
               {cart.count > 0 && (
                 <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
                   {cart.count}
@@ -524,7 +516,7 @@ function ConversationView({
                 onClick={onResetRecommendations}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                Show all ({CATALOG.length})
+                Show all ({sortedProducts.length})
               </button>
             )}
           </div>
@@ -639,10 +631,17 @@ function ProductCard({
 }) {
   const cart = useCart();
   const [justAdded, setJustAdded] = useState(false);
-  const inCart = cart.items.find((i) => i.productId === product.id);
+  const inCart = cart.items.find((i) => i.productId === product.sku);
 
   function add() {
-    cart.add({ productId: product.id, name: product.name, price: product.price, qty: product.packSize });
+    cart.add({
+      productId: product.sku,
+      name: product.name,
+      price: product.price,
+      qty: 1,
+      category: product.category,
+      unit: product.unit,
+    });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
   }
@@ -654,8 +653,8 @@ function ProductCard({
       }`}
     >
       <div className="relative p-3 pb-2">
-        <div className="absolute top-2 left-2 text-base" title={product.supplier}>
-          {product.flag}
+        <div className="absolute top-2 left-2 text-[10px] font-mono text-muted-foreground" title={product.supplier ?? undefined}>
+          {product.sku}
         </div>
         {recommended && (
           <div className="absolute top-2 right-2 bg-brand text-brand-foreground text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full">
@@ -668,19 +667,21 @@ function ProductCard({
       </div>
       <div className="px-3 pb-3 flex-1 flex flex-col">
         <div className="font-semibold text-sm leading-tight line-clamp-2">{product.name}</div>
-        <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{product.spec}</div>
+        <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+          {product.supplier ?? "—"} · per {product.unit}
+        </div>
         <div className="mt-auto pt-3">
           {inCart ? (
             <div className="flex items-center justify-between rounded-lg border h-11 overflow-hidden">
               <button
-                onClick={() => cart.setQty(product.id, inCart.qty - product.packSize)}
+                onClick={() => cart.setQty(product.sku, inCart.qty - 1)}
                 className="w-11 h-full grid place-items-center hover:bg-accent text-lg font-semibold"
               >
                 −
               </button>
               <span className="text-sm font-semibold">{inCart.qty}</span>
               <button
-                onClick={() => cart.setQty(product.id, inCart.qty + product.packSize)}
+                onClick={() => cart.setQty(product.sku, inCart.qty + 1)}
                 className="w-11 h-full grid place-items-center hover:bg-accent text-lg font-semibold"
               >
                 +
@@ -691,7 +692,7 @@ function ProductCard({
               onClick={add}
               className="w-full h-11 flex items-stretch rounded-lg overflow-hidden bg-foreground text-background font-semibold text-sm"
             >
-              <span className="flex-1 grid place-items-center">CHF {product.price.toFixed(2)}</span>
+              <span className="flex-1 grid place-items-center">{formatEUR(product.price)}</span>
               <span className="w-12 grid place-items-center bg-brand text-brand-foreground">
                 {justAdded ? <Check className="size-5" /> : <Plus className="size-5" />}
               </span>
@@ -737,10 +738,10 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
               <div className="flex-1">
                 <div className="font-medium text-sm">{i.name}</div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  {i.qty} × CHF {i.price.toFixed(2)}
+                  {i.qty} × {formatEUR(i.price)}
                 </div>
               </div>
-              <div className="font-semibold text-sm">CHF {(i.qty * i.price).toFixed(2)}</div>
+              <div className="font-semibold text-sm">{formatEUR(i.qty * i.price)}</div>
               <button
                 onClick={() => cart.remove(i.productId)}
                 className="text-muted-foreground hover:text-destructive"
@@ -755,7 +756,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
           {cart.items.length > 0 && <DecisionSummary decision={decision} />}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-semibold">CHF {cart.subtotal.toFixed(2)}</span>
+            <span className="font-semibold">{formatEUR(cart.subtotal)}</span>
           </div>
           <button
             disabled={cart.items.length === 0}
