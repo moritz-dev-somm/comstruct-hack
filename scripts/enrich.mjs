@@ -19,8 +19,8 @@ const tool = {
         description: { type: "string", description: "1–2 sentence concise German product description for a construction site worker." },
         attributes: {
           type: "object",
-          description: "Category-relevant technical attributes (e.g. material, head_type, drive, diameter_mm, length_mm, weight_g, head_weight_g, voltage_v, capacity_ml, color, standard, certification, moq, packaging). Use snake_case keys. Include units in the key name where helpful. Only include attributes that genuinely apply to this product.",
-          additionalProperties: { type: ["string", "number", "boolean"] },
+          description: "Category-relevant technical attributes as string key/value pairs. Use snake_case keys; include units in the value (e.g. diameter='4 mm', length='40 mm', head_weight='450 g', voltage='18 V', norm='EN 388'). Aim for 4–10 attributes that genuinely apply to this product.",
+          additionalProperties: { type: "string" },
         },
         use_cases: {
           type: "array",
