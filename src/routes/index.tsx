@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -13,6 +13,7 @@ import {
   HardHat,
   Plus,
   Ruler,
+  SlidersHorizontal,
   ShoppingCart,
   X,
   Zap,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { CATALOG, BUNDLES, type Product } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
+import { useCheckoutDecision, type CheckoutDecision } from "@/lib/budget";
 import { VoiceButton } from "@/components/VoiceButton";
 
 export const Route = createFileRoute("/")({
@@ -257,18 +259,27 @@ function Home() {
               </button>
             </div>
           </div>
-          <button
-            onClick={() => setCartOpen(true)}
-            className="relative inline-flex items-center gap-2 rounded-full border px-3 h-10 text-sm font-medium hover:bg-accent"
-          >
-            <ShoppingCart className="size-4" />
-            <span>CHF {cart.subtotal.toFixed(2)}</span>
-            {cart.count > 0 && (
-              <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
-                {cart.count}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/settings"
+              aria-label="Approval rules"
+              className="grid size-10 place-items-center rounded-full border hover:bg-accent"
+            >
+              <SlidersHorizontal className="size-4" />
+            </Link>
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative inline-flex items-center gap-2 rounded-full border px-3 h-10 text-sm font-medium hover:bg-accent"
+            >
+              <ShoppingCart className="size-4" />
+              <span>CHF {cart.subtotal.toFixed(2)}</span>
+              {cart.count > 0 && (
+                <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
+                  {cart.count}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -313,20 +324,9 @@ function Home() {
         </div>
       )}
 
-      {/* Approval banner */}
-      {cart.subtotal > 200 && (
-        <div className="fixed bottom-[88px] left-0 right-0 z-40 mx-auto max-w-3xl px-4">
-          <div className="rounded-lg bg-brand text-brand-foreground px-4 py-3 shadow-lg flex items-center justify-between text-sm font-medium">
-            <span>Subtotal CHF {cart.subtotal.toFixed(2)} — needs PM approval before dispatch.</span>
-            <button
-              className="ml-3 rounded-md bg-background/20 hover:bg-background/30 px-3 py-1.5 text-xs font-semibold"
-              onClick={() => toast.success("Sent for PM approval")}
-            >
-              Send for approval
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Approval banner — driven by budget/rules decision */}
+      <ApprovalBanner />
+
 
       {/* A-material modal */}
       {aMaterialFlag && (
@@ -705,6 +705,19 @@ function ProductCard({
 
 function CartDrawer({ onClose }: { onClose: () => void }) {
   const cart = useCart();
+  const decision = useCheckoutDecision(cart.items);
+  const needsApproval = decision.action === "requires_approval";
+
+  function submit() {
+    if (needsApproval) {
+      toast.success("Sent for PM approval");
+    } else {
+      toast.success("Order sent to supplier");
+    }
+    cart.clear();
+    onClose();
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -739,22 +752,70 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
           ))}
         </div>
         <div className="border-t p-4 space-y-3">
+          {cart.items.length > 0 && <DecisionSummary decision={decision} />}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-semibold">CHF {cart.subtotal.toFixed(2)}</span>
           </div>
           <button
             disabled={cart.items.length === 0}
-            onClick={() => {
-              toast.success("Order submitted");
-              cart.clear();
-              onClose();
-            }}
+            onClick={submit}
             className="w-full h-12 rounded-lg bg-brand text-brand-foreground font-semibold disabled:opacity-40"
           >
-            {cart.subtotal > 200 ? "Send for PM approval" : "Submit order"}
+            {needsApproval ? "Send for PM approval" : "Send order to supplier"}
           </button>
+          <Link
+            to="/settings"
+            className="block text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            Adjust budget &amp; rules
+          </Link>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DecisionSummary({ decision }: { decision: CheckoutDecision }) {
+  if (decision.hits.length === 0) {
+    return (
+      <div className="rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-xs">
+        <div className="font-semibold text-brand">Within budget — auto-dispatch</div>
+        <div className="text-muted-foreground mt-0.5">
+          No approval needed. Order goes straight to the supplier.
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs space-y-1">
+      <div className="font-semibold text-amber-700 dark:text-amber-400">
+        Needs PM approval
+      </div>
+      <ul className="text-muted-foreground space-y-0.5">
+        {decision.hits.map((h, idx) => (
+          <li key={idx}>• {h.message}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ApprovalBanner() {
+  const cart = useCart();
+  const decision = useCheckoutDecision(cart.items);
+  if (cart.items.length === 0 || decision.action !== "requires_approval") return null;
+  const headline = decision.hits[0]?.message ?? "Needs PM approval";
+  return (
+    <div className="fixed bottom-[88px] left-0 right-0 z-40 mx-auto max-w-3xl px-4 pointer-events-none">
+      <div className="pointer-events-auto rounded-lg bg-brand text-brand-foreground px-4 py-3 shadow-lg flex items-center justify-between gap-3 text-sm font-medium">
+        <span className="line-clamp-2">{headline}</span>
+        <button
+          className="shrink-0 rounded-md bg-background/20 hover:bg-background/30 px-3 py-1.5 text-xs font-semibold"
+          onClick={() => toast.success("Sent for PM approval")}
+        >
+          Send for approval
+        </button>
       </div>
     </div>
   );
