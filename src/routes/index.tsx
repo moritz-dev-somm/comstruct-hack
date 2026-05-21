@@ -504,23 +504,26 @@ function ConversationView({
         )}
       </div>
 
-      {/* Grid */}
+      {/* Grid — McMaster-style catalog */}
       <div className="border-t bg-muted/30">
-        <div className="mx-auto max-w-3xl px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="mx-auto max-w-5xl px-4 py-6">
+          <div className="flex items-end justify-between mb-4 border-b-2 border-brand/70 pb-2">
+            <h2 className="text-xl font-bold text-brand">
               {recommendedIds.length > 0 ? "Recommended for this job" : "Catalog"}
             </h2>
-            {recommendedIds.length > 0 && (
-              <button
-                onClick={onResetRecommendations}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Show all ({sortedProducts.length})
-              </button>
-            )}
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground">{sortedProducts.length} Products</span>
+              {recommendedIds.length > 0 && (
+                <button
+                  onClick={onResetRecommendations}
+                  className="text-sm font-medium text-brand hover:underline"
+                >
+                  Show all
+                </button>
+              )}
+            </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {sortedProducts.map((p) => (
               <ProductCard
                 key={p.sku}
