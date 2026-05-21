@@ -432,7 +432,7 @@ function HeroView({
           </div>
           <div className="mt-4 grid grid-cols-3 gap-3">
             {CATEGORY_TILES.map((c) => (
-              <CategoryTile key={c.label} tile={c} onSelect={() => send(c.prompt)} />
+              <CategoryTile key={c.label} tile={c} onSelect={() => onSelectCategory(c.category)} />
             ))}
           </div>
         </div>
