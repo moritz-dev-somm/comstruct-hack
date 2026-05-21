@@ -192,9 +192,11 @@ function Home() {
   }
 
   function startVoice() {
-    const SR =
-      (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognition }).webkitSpeechRecognition ||
-      (window as unknown as { SpeechRecognition?: new () => SpeechRecognition }).SpeechRecognition;
+    const w = window as unknown as {
+      webkitSpeechRecognition?: new () => MinimalSpeechRecognition;
+      SpeechRecognition?: new () => MinimalSpeechRecognition;
+    };
+    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
     if (!SR) {
       toast.error("Voice input not supported on this device");
       return;
