@@ -256,7 +256,23 @@ function Home() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Link
+              to="/orders"
+              aria-label="My orders"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border px-3 h-10 text-xs font-medium hover:bg-accent"
+            >
+              <ClipboardList className="size-4" />
+              Orders
+            </Link>
+            <Link
+              to="/procurement"
+              aria-label="Procurement view"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border px-3 h-10 text-xs font-medium hover:bg-accent"
+            >
+              <Building2 className="size-4" />
+              Procurement
+            </Link>
             <Link
               to="/settings"
               aria-label="Approval rules"
