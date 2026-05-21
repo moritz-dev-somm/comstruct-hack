@@ -259,18 +259,27 @@ function Home() {
               </button>
             </div>
           </div>
-          <button
-            onClick={() => setCartOpen(true)}
-            className="relative inline-flex items-center gap-2 rounded-full border px-3 h-10 text-sm font-medium hover:bg-accent"
-          >
-            <ShoppingCart className="size-4" />
-            <span>CHF {cart.subtotal.toFixed(2)}</span>
-            {cart.count > 0 && (
-              <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
-                {cart.count}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/settings"
+              aria-label="Approval rules"
+              className="grid size-10 place-items-center rounded-full border hover:bg-accent"
+            >
+              <SlidersHorizontal className="size-4" />
+            </Link>
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative inline-flex items-center gap-2 rounded-full border px-3 h-10 text-sm font-medium hover:bg-accent"
+            >
+              <ShoppingCart className="size-4" />
+              <span>CHF {cart.subtotal.toFixed(2)}</span>
+              {cart.count > 0 && (
+                <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
+                  {cart.count}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
