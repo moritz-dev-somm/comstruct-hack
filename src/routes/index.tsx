@@ -406,15 +406,9 @@ function HeroView({
             or browse by category
             <div className="flex-1 h-px bg-border" />
           </div>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {["Fasteners", "PPE", "Sealants", "Tools", "Tape", "Batteries"].map((c) => (
-              <button
-                key={c}
-                onClick={() => send(`Show me ${c.toLowerCase()}`)}
-                className="rounded-xl border bg-card hover:bg-accent p-5 text-left font-semibold"
-              >
-                {c}
-              </button>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {CATEGORY_TILES.map((c) => (
+              <CategoryTile key={c.label} tile={c} onSelect={() => send(c.prompt)} />
             ))}
           </div>
         </div>
