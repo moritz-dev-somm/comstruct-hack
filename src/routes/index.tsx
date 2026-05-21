@@ -439,6 +439,27 @@ function HeroView({
   );
 }
 
+function CategoryTile({
+  tile,
+  onSelect,
+}: {
+  tile: CategoryTileData;
+  onSelect: () => void;
+}) {
+  const Icon = tile.icon;
+  return (
+    <button
+      onClick={onSelect}
+      className="group flex flex-col items-center justify-center gap-2 rounded-xl border bg-card p-4 aspect-square text-center transition-colors hover:bg-accent hover:border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+    >
+      <span className="grid size-12 place-items-center rounded-lg bg-brand/10 text-brand transition-colors group-hover:bg-brand group-hover:text-brand-foreground">
+        <Icon className="size-6" strokeWidth={2} />
+      </span>
+      <span className="text-xs font-semibold leading-tight">{tile.label}</span>
+    </button>
+  );
+}
+
 function ConversationView({
   messages,
   streaming,
