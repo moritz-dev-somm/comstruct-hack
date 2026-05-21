@@ -49,6 +49,9 @@ type Row = {
   typical_site: string | null;
   attributes: Record<string, unknown> | null;
   keywords: string[] | null;
+  description: string | null;
+  use_cases: UseCase[] | null;
+  enriched_at: string | null;
 };
 
 export function rowToProduct(r: Row): Product {
@@ -66,6 +69,9 @@ export function rowToProduct(r: Row): Product {
     typicalSite: r.typical_site,
     attributes: r.attributes ?? {},
     keywords: r.keywords ?? [],
+    description: r.description,
+    useCases: r.use_cases ?? [],
+    enrichedAt: r.enriched_at,
   };
 }
 
