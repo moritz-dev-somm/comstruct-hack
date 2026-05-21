@@ -14,6 +14,7 @@ import { Route as ProcurementRouteImport } from './routes/procurement'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProcurementIndexRouteImport } from './routes/procurement.index'
+import { Route as ProcurementOrdersRouteImport } from './routes/procurement.orders'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 
@@ -42,6 +43,11 @@ const ProcurementIndexRoute = ProcurementIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProcurementRoute,
 } as any)
+const ProcurementOrdersRoute = ProcurementOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => ProcurementRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/api/chat': typeof ApiChatRoute
+  '/procurement/orders': typeof ProcurementOrdersRoute
   '/procurement/': typeof ProcurementIndexRoute
 }
 export interface FileRoutesByTo {
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/api/chat': typeof ApiChatRoute
+  '/procurement/orders': typeof ProcurementOrdersRoute
   '/procurement': typeof ProcurementIndexRoute
 }
 export interface FileRoutesById {
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/admin/products': typeof AdminProductsRoute
   '/api/chat': typeof ApiChatRoute
+  '/procurement/orders': typeof ProcurementOrdersRoute
   '/procurement/': typeof ProcurementIndexRoute
 }
 export interface FileRouteTypes {
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/admin/products'
     | '/api/chat'
+    | '/procurement/orders'
     | '/procurement/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/admin/products'
     | '/api/chat'
+    | '/procurement/orders'
     | '/procurement'
   id:
     | '__root__'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/admin/products'
     | '/api/chat'
+    | '/procurement/orders'
     | '/procurement/'
   fileRoutesById: FileRoutesById
 }
@@ -155,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcurementIndexRouteImport
       parentRoute: typeof ProcurementRoute
     }
+    '/procurement/orders': {
+      id: '/procurement/orders'
+      path: '/orders'
+      fullPath: '/procurement/orders'
+      preLoaderRoute: typeof ProcurementOrdersRouteImport
+      parentRoute: typeof ProcurementRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -173,10 +192,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface ProcurementRouteChildren {
+  ProcurementOrdersRoute: typeof ProcurementOrdersRoute
   ProcurementIndexRoute: typeof ProcurementIndexRoute
 }
 
 const ProcurementRouteChildren: ProcurementRouteChildren = {
+  ProcurementOrdersRoute: ProcurementOrdersRoute,
   ProcurementIndexRoute: ProcurementIndexRoute,
 }
 
