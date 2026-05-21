@@ -129,8 +129,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <BudgetProvider>
         <CartProvider>
-          <Outlet />
-          <Toaster position="top-center" richColors />
+          <OrdersProvider>
+            <Outlet />
+            <Toaster position="top-center" richColors />
+          </OrdersProvider>
         </CartProvider>
       </BudgetProvider>
     </QueryClientProvider>
